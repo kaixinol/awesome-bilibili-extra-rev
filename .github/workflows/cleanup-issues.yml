@@ -58,6 +58,11 @@ jobs:
               }
             }
 
+            const sortByDate = (a, b) => (a.__updatedAt || '').localeCompare(b.__updatedAt || '');
+            archivedInactive.sort(sortByDate);
+            archived.sort(sortByDate);
+            inactive.sort(sortByDate);
+
             const total = archivedInactive.length + archived.length + inactive.length;
             if (total === 0) {
               console.log('No projects to clean up.');

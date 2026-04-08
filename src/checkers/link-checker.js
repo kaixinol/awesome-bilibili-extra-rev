@@ -222,7 +222,7 @@ export const checkRepoStatus = async (items) => {
           results[resultIdx] = {
             ...results[resultIdx],
             __archived: status.archived,
-            __inactive: !status.archived && status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
+            __inactive: status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
             __updatedAt: status.updatedAt,
           };
         }
@@ -261,7 +261,7 @@ export const checkRepoStatus = async (items) => {
           results[resultIdx] = {
             ...results[resultIdx],
             __archived: status.archived,
-            __inactive: !status.archived && status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
+            __inactive: status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
             __updatedAt: status.updatedAt,
             __gfAuthor: status.author || '',
             __gfName: status.name || '',
