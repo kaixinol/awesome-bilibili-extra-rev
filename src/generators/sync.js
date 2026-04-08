@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadAllItems, loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
 import { normalizeLink } from '../validators/item-validator.js';
-import { checkItems } from '../checkers/link-checker.js';
+import { checkItems, checkRepoStatus } from '../checkers/link-checker.js';
 import { readText, writeText, findYamlFiles } from '../utils/file-utils.js';
 import { processDescription } from '../validators/item-validator.js';
 import { addIcon } from '../utils/badge-utils.js';
@@ -127,6 +127,9 @@ const generateReadme = (validItems) => {
     const header = '| 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |\n|:--- |:--- |:--- |:--- |:--- |';
     const rows = sorted.map((item) => {
       const link = item.__normalizedLink;
+      let displayName = item.name;
+      if (item.__archived) displayName = `~~${item.name}~~`;
+      else if (item.__inactive) displayName = `*${item.name}*`;
       const desc = processDescription(item.description);
       const stars = item.from === 'github'
         ? `![Star](https://img.shields.io/github/stars/${item.link}?&label=)`
@@ -162,13 +165,24 @@ const main = async () => {
   console.log('🔗 检查链接...');
   const checkedItems = await checkItems(allItems, { concurrency: 30 });
 
-  const validItems = checkedItems.filter((i) => i.ok || !i.status);
-  const changes = detectChanges(checkedItems);
+  console.log('📂 检查项目状态...');
+  const itemsWithStatus = await checkRepoStatus(checkedItems);
+
+  const validItems = itemsWithStatus.filter((i) => i.ok || !i.status);
+  const changes = detectChanges(itemsWithStatus);
 
   console.log('\n📈 变更统计:');
+  const archivedCount = validItems.filter((i) => i.__archived).length;
+  const inactiveCount = validItems.filter((i) => i.__inactive).length;
   console.log(`   ✏️  改名: ${changes.renamed.length}`);
   console.log(`   💀 死链删除: ${changes.deadRemoved.length}`);
-  console.log(`   ⚠️  网络错误(跳过): ${changes.networkError.length}\n`);
+  console.log(`   ⚠️  网络错误(跳过): ${changes.networkError.length}`);
+  if (archivedCount > 0 || inactiveCount > 0) {
+    console.log(`\n📊 项目状态:`);
+    if (archivedCount > 0) console.log(`   ⏸️  归档: ${archivedCount}`);
+    if (inactiveCount > 0) console.log(`   💤 超过3年未更新: ${inactiveCount}`);
+  }
+  console.log('');
 
   if (changes.renamed.length > 0) {
     console.log('改名详情:');

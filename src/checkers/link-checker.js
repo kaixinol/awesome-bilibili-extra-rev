@@ -124,3 +124,87 @@ export const checkItems = async (items, options = {}) => {
 
   return results;
 };
+
+// ==================== GitHub Repo Status Detection ====================
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const THREE_YEARS_AGO = new Date(Date.now() - 3 * 365.25 * 24 * 60 * 60 * 1000).toISOString();
+
+/**
+ * Fetch GitHub repo info via API
+ */
+const fetchRepoStatus = async (repoPath) => {
+  const url = `https://api.github.com/repos/${repoPath}`;
+  const args = ['-sS', '--max-time', '5'];
+
+  if (GITHUB_TOKEN) {
+    args.push('-H', `Authorization: Bearer ${GITHUB_TOKEN}`);
+  }
+  args.push(url);
+
+  try {
+    const { execFile: execFileRaw } = await import('node:child_process');
+    const execFileCb = promisify(execFileRaw);
+    const { stdout } = await execFileCb('curl', args, { timeout: 6000 });
+    const data = JSON.parse(stdout);
+    return {
+      archived: data.archived === true,
+      pushedAt: data.pushed_at || null,
+    };
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Check GitHub repos for archived/inactive status
+ * Only runs if GITHUB_TOKEN is set (CI environment)
+ */
+export const checkRepoStatus = async (items) => {
+  if (!GITHUB_TOKEN) return items;
+
+  const githubItems = items.filter((item) => item.from === 'github');
+  const results = [...items];
+
+  let cursor = 0;
+  const total = githubItems.length;
+  let completed = 0;
+
+  const worker = async () => {
+    while (cursor < total) {
+      const idx = cursor++;
+      const item = githubItems[idx];
+      const repoPath = item.link;
+      const status = await fetchRepoStatus(repoPath);
+
+      if (status) {
+        // Find matching item in results
+        const resultIdx = results.findIndex(
+          (r) => r.__normalizedLink === item.__normalizedLink
+        );
+        if (resultIdx >= 0) {
+          results[resultIdx] = {
+            ...results[resultIdx],
+            __archived: status.archived,
+            __inactive: !status.archived && status.pushedAt && status.pushedAt < THREE_YEARS_AGO,
+          };
+        }
+      }
+
+      completed++;
+      const percentage = ((completed / total) * 100).toFixed(1);
+      const filled = Math.round((completed / total) * 20);
+      const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
+      process.stdout.write(`\r   [${bar}] ${percentage}% (${completed}/${total}) 检查项目状态`);
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(10, total) }, () => worker()));
+  process.stdout.write('\n');
+
+  const archivedCount = results.filter((r) => r.__archived).length;
+  const inactiveCount = results.filter((r) => r.__inactive).length;
+  console.log(`   ✓ 项目状态检查: ${archivedCount} 个归档, ${inactiveCount} 个超过3年未更新\n`);
+
+  return results;
+};
