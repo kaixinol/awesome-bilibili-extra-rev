@@ -7,8 +7,8 @@ on:
 jobs:
   apply-cleanup:
     if: >
-      github.event.issue.author_association == 'OWNER' &&
-      contains(github.event.comment.body, '@github-actions[bot] apply cleanup')
+      contains(github.event.comment.body, 'apply cleanup') &&
+      (github.event.comment.author_association == 'OWNER' || github.event.comment.user.login == github.event.issue.user.login)
     runs-on: ubuntu-latest
 
     steps:
