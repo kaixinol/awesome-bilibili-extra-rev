@@ -182,9 +182,12 @@ const fetchGreasyforkStatus = async (scriptId) => {
     const execFileCb = promisify(execFileRaw);
     const { stdout } = await execFileCb('curl', args, { timeout: 6000 });
     const data = JSON.parse(stdout);
+    const author = data.users?.[0]?.name || '';
     return {
       archived: data.deleted === true,
       updatedAt: data.code_updated_at || null,
+      author,
+      name: data.name || '',
     };
   } catch {
     return null;
@@ -220,6 +223,7 @@ export const checkRepoStatus = async (items) => {
             ...results[resultIdx],
             __archived: status.archived,
             __inactive: !status.archived && status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
+            __updatedAt: status.updatedAt,
           };
         }
       }
@@ -258,6 +262,9 @@ export const checkRepoStatus = async (items) => {
             ...results[resultIdx],
             __archived: status.archived,
             __inactive: !status.archived && status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
+            __updatedAt: status.updatedAt,
+            __gfAuthor: status.author || '',
+            __gfName: status.name || '',
           };
         }
       }

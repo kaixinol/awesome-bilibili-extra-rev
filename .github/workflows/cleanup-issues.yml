@@ -64,16 +64,36 @@ jobs:
               return;
             }
 
-            const formatItem = (item) => {
+            const yearsAgo = (isoDate) => {
+              const diff = Date.now() - new Date(isoDate).getTime();
+              return (diff / (365.25 * 24 * 60 * 60 * 1000)).toFixed(1);
+            };
+
+            const formatItem = (item, type) => {
               const url = item.__normalizedLink;
-              let name = item.name;
+              let name, suffix;
+
               if (item.from === 'github') {
                 name = item.link;
+                if (type === 'archived') {
+                  suffix = '（已存档于 ' + (item.__updatedAt || '').slice(0, 10) + '）';
+                } else {
+                  suffix = '（最后更新于 ' + yearsAgo(item.__updatedAt) + ' 年前）';
+                }
               } else if (item.from === 'greasyfork') {
-                const idMatch = String(item.link).match(/^(\d+)/);
-                name = idMatch ? idMatch[1] : item.name;
+                const author = item.__gfAuthor || 'Unknown';
+                const scriptName = item.__gfName || item.name;
+                name = author + '/' + scriptName;
+                if (type === 'archived') {
+                  suffix = '（已删除）';
+                } else {
+                  suffix = '（最后更新于 ' + yearsAgo(item.__updatedAt) + ' 年前）';
+                }
+              } else {
+                name = item.name;
+                suffix = '';
               }
-              return '- [x] [' + name + '](' + url + ')';
+              return '- [x] [' + name + '](' + url + ') ' + suffix;
             };
 
             let body = '## Cleanup Review\\n\\n';
@@ -81,15 +101,15 @@ jobs:
 
             if (archivedInactive.length > 0) {
               body += '### 归档且超过3年未更新\\n\\n';
-              body += archivedInactive.map(formatItem).join('\\n') + '\\n\\n';
+              body += archivedInactive.map((i) => formatItem(i, 'archived')).join('\\n') + '\\n\\n';
             }
             if (archived.length > 0) {
               body += '### 已归档\\n\\n';
-              body += archived.map(formatItem).join('\\n') + '\\n\\n';
+              body += archived.map((i) => formatItem(i, 'archived')).join('\\n') + '\\n\\n';
             }
             if (inactive.length > 0) {
               body += '### 超过3年未更新\\n\\n';
-              body += inactive.map(formatItem).join('\\n') + '\\n\\n';
+              body += inactive.map((i) => formatItem(i, 'inactive')).join('\\n') + '\\n\\n';
             }
 
             body += '完成后评论：\`@github-actions[bot] apply cleanup\`\\n';
