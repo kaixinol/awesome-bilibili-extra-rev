@@ -7,10 +7,12 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
-const DEFAULT_CONCURRENCY = 30;
+const DEFAULT_CONCURRENCY = 10;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_RETRIES = 3;
 const NULL_DEVICE = process.platform === 'win32' ? 'NUL' : '/dev/null';
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 (+https://github.com/kaixinol/awesome-bilibili-extra)';
+const PROGRESS_INTERVAL = 100;
 
 // Build curl args with proxy support
 const getCurlArgs = (url) => {
@@ -20,7 +22,7 @@ const getCurlArgs = (url) => {
     '-o', NULL_DEVICE,
     '-w', '%{http_code} %{url_effective}',
     '--max-time', String(Math.ceil(DEFAULT_TIMEOUT_MS / 1000)),
-    '--user-agent', 'Mozilla/5.0 (compatible; awesome-bilibili-extra-ci/1.0)',
+    '--user-agent', USER_AGENT,
   ];
 
   const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.ALL_PROXY;
@@ -98,6 +100,7 @@ export const checkItems = async (items, options = {}) => {
   const results = new Array(uniqueItems.length);
   let cursor = 0;
   let completed = 0;
+  let lastProgressUpdate = 0;
   const total = uniqueItems.length;
   let outputLock = Promise.resolve();
 
@@ -110,7 +113,10 @@ export const checkItems = async (items, options = {}) => {
 
       outputLock = outputLock.then(() => {
         completed++;
-        drawProgressBar(completed, total, '   ');
+        if (completed - lastProgressUpdate >= PROGRESS_INTERVAL || completed === total) {
+          drawProgressBar(completed, total, '   ');
+          lastProgressUpdate = completed;
+        }
       });
     }
   };
@@ -125,20 +131,28 @@ export const checkItems = async (items, options = {}) => {
   return results;
 };
 
-// ==================== GitHub Repo Status Detection ====================
+// ==================== Project Status Detection ====================
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const THREE_YEARS_AGO = new Date(Date.now() - 3 * 365.25 * 24 * 60 * 60 * 1000).toISOString();
 
 /**
- * Fetch GitHub repo info via API
+ * Extract GF script ID from link
  */
-const fetchRepoStatus = async (repoPath) => {
+const extractGfId = (link) => {
+  const match = String(link).match(/^(\d+)/);
+  return match ? match[1] : null;
+};
+
+/**
+ * Fetch GitHub repo status via API
+ */
+const fetchGithubStatus = async (repoPath) => {
   const url = `https://api.github.com/repos/${repoPath}`;
   const args = ['-sS', '--max-time', '5'];
 
-  if (GITHUB_TOKEN) {
-    args.push('-H', `Authorization: Bearer ${GITHUB_TOKEN}`);
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    args.push('-H', `Authorization: Bearer ${token}`);
   }
   args.push(url);
 
@@ -149,7 +163,7 @@ const fetchRepoStatus = async (repoPath) => {
     const data = JSON.parse(stdout);
     return {
       archived: data.archived === true,
-      pushedAt: data.pushed_at || null,
+      updatedAt: data.pushed_at || null,
     };
   } catch {
     return null;
@@ -157,28 +171,47 @@ const fetchRepoStatus = async (repoPath) => {
 };
 
 /**
- * Check GitHub repos for archived/inactive status
- * Only runs if GITHUB_TOKEN is set (CI environment)
+ * Fetch GreasyFork script status via API
+ */
+const fetchGreasyforkStatus = async (scriptId) => {
+  const url = `https://api.greasyfork.org/en/scripts/${scriptId}.json`;
+  const args = ['-sS', '--max-time', '5', url];
+
+  try {
+    const { execFile: execFileRaw } = await import('node:child_process');
+    const execFileCb = promisify(execFileRaw);
+    const { stdout } = await execFileCb('curl', args, { timeout: 6000 });
+    const data = JSON.parse(stdout);
+    return {
+      archived: data.deleted === true,
+      updatedAt: data.code_updated_at || null,
+    };
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Check project status for both GitHub and GreasyFork
  */
 export const checkRepoStatus = async (items) => {
-  if (!GITHUB_TOKEN) return items;
-
-  const githubItems = items.filter((item) => item.from === 'github');
   const results = [...items];
-
-  let cursor = 0;
-  const total = githubItems.length;
+  let total = 0;
   let completed = 0;
+  let lastProgressUpdate = 0;
 
-  const worker = async () => {
-    while (cursor < total) {
+  // GitHub items
+  const githubItems = items.filter((item) => item.from === 'github');
+  total += githubItems.length;
+
+  const ghWorker = async () => {
+    let cursor = 0;
+    while (cursor < githubItems.length) {
       const idx = cursor++;
       const item = githubItems[idx];
-      const repoPath = item.link;
-      const status = await fetchRepoStatus(repoPath);
+      const status = await fetchGithubStatus(item.link);
 
       if (status) {
-        // Find matching item in results
         const resultIdx = results.findIndex(
           (r) => r.__normalizedLink === item.__normalizedLink
         );
@@ -186,25 +219,68 @@ export const checkRepoStatus = async (items) => {
           results[resultIdx] = {
             ...results[resultIdx],
             __archived: status.archived,
-            __inactive: !status.archived && status.pushedAt && status.pushedAt < THREE_YEARS_AGO,
+            __inactive: !status.archived && status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
           };
         }
       }
 
       completed++;
-      const percentage = ((completed / total) * 100).toFixed(1);
-      const filled = Math.round((completed / total) * 20);
-      const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
-      process.stdout.write(`\r   [${bar}] ${percentage}% (${completed}/${total}) 检查项目状态`);
+      if (completed - lastProgressUpdate >= PROGRESS_INTERVAL || completed === total) {
+        drawProgressBar(completed, total, '   ');
+        lastProgressUpdate = completed;
+      }
     }
   };
 
-  await Promise.all(Array.from({ length: Math.min(10, total) }, () => worker()));
-  process.stdout.write('\n');
+  // GreasyFork items
+  const gfItems = items.filter((item) => item.from === 'greasyfork');
+  total += gfItems.length;
 
-  const archivedCount = results.filter((r) => r.__archived).length;
-  const inactiveCount = results.filter((r) => r.__inactive).length;
-  console.log(`   ✓ 项目状态检查: ${archivedCount} 个归档, ${inactiveCount} 个超过3年未更新\n`);
+  const gfWorker = async () => {
+    let cursor = 0;
+    while (cursor < gfItems.length) {
+      const idx = cursor++;
+      const item = gfItems[idx];
+      const scriptId = extractGfId(item.link);
+      if (!scriptId) {
+        completed++;
+        continue;
+      }
+
+      const status = await fetchGreasyforkStatus(scriptId);
+
+      if (status) {
+        const resultIdx = results.findIndex(
+          (r) => r.__normalizedLink === item.__normalizedLink
+        );
+        if (resultIdx >= 0) {
+          results[resultIdx] = {
+            ...results[resultIdx],
+            __archived: status.archived,
+            __inactive: !status.archived && status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
+          };
+        }
+      }
+
+      completed++;
+      if (completed - lastProgressUpdate >= PROGRESS_INTERVAL || completed === total) {
+        drawProgressBar(completed, total, '   ');
+        lastProgressUpdate = completed;
+      }
+    }
+  };
+
+  await Promise.all([
+    Array.from({ length: Math.min(10, githubItems.length) }, () => ghWorker()),
+    Array.from({ length: Math.min(10, gfItems.length) }, () => gfWorker()),
+  ].flat());
+
+  if (total > 0) {
+    process.stdout.write('\n');
+    const archivedCount = results.filter((r) => r.__archived).length;
+    const inactiveCount = results.filter((r) => r.__inactive).length;
+    console.log(`   ✓ 项目状态检查: ${archivedCount} 个归档/删除, ${inactiveCount} 个超过3年未更新\n`);
+  }
 
   return results;
 };

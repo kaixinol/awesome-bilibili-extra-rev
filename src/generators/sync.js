@@ -163,7 +163,7 @@ const main = async () => {
   console.log(`   总计: ${allItems.length} 个项目\n`);
 
   console.log('🔗 检查链接...');
-  const checkedItems = await checkItems(allItems, { concurrency: 30 });
+  const checkedItems = await checkItems(allItems);
 
   console.log('📂 检查项目状态...');
   const itemsWithStatus = await checkRepoStatus(checkedItems);
