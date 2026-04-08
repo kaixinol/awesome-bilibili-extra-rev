@@ -4,27 +4,50 @@ on:
   schedule:
     - cron: '0 0 1 * *'
   workflow_dispatch:
+    inputs:
+      AUTO_PR:
+        description: '是否自动创建 PR'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  pull_request_target:
+    types: [closed]
 
 jobs:
   sync:
+    if: github.event_name != 'pull_request_target' || (github.event.pull_request.merged == true && github.event.pull_request.user.login == 'github-actions[bot]')
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Clean up merged branch
+        if: github.event_name == 'pull_request_target'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          echo "🧹 删除已合并分支: $BRANCH"
+          gh api -X DELETE repos/${{ github.repository }}/git/refs/heads/$BRANCH || echo "分支已删除或不存在"
+          exit 0
+
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-      
+
       - run: pnpm install
-      
+
       - name: Check YAML syntax
         run: pnpm check:yaml
 
@@ -49,6 +72,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pnpm sync
+
+          AUTO_PR="${{ github.event.inputs.AUTO_PR || 'true' }}"
+
+          if [ "$AUTO_PR" = "false" ]; then
+            echo "🔒 AUTO_PR=false，跳过自动创建 PR"
+            exit 0
+          fi
 
           # 检查是否有变更
           if ! git diff --quiet HEAD -- README.md RAW_DATA/ src/user.js; then
