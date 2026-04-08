@@ -37,31 +37,29 @@ jobs:
           node -e "
           import fs from 'node:fs';
           import path from 'node:path';
-          import { parse, stringify } from 'yaml';
           import { loadYamlArray, writeYamlArray } from './src/data/yaml-manager.js';
           import { normalizeLink } from './src/validators/item-validator.js';
-          import { findYamlFiles } from './src/utils/file-utils.js';
 
           const removals = process.env.REMOVALS.trim().split('\n');
           const removalSet = new Set(removals.map(u => u.trim()));
 
           // Find all YAML files
           const rawDir = path.join(process.cwd(), 'RAW_DATA');
-          function findYamlFiles(dir) {
+          function walkDir(d) {
             const files = [];
-            function walk(d) {
-              for (const item of fs.readdirSync(d)) {
-                const full = path.join(d, item);
+            function walk(dd) {
+              for (const item of fs.readdirSync(dd)) {
+                const full = path.join(dd, item);
                 const stat = fs.statSync(full);
                 if (stat.isDirectory()) walk(full);
                 else if (item.endsWith('.yml')) files.push(full);
               }
             }
-            walk(dir);
+            walk(d);
             return files;
           }
 
-          const ymlFiles = findYamlFiles(rawDir);
+          const ymlFiles = walkDir(rawDir);
           let removedCount = 0;
 
           for (const filePath of ymlFiles) {
