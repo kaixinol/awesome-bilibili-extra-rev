@@ -1,0 +1,124 @@
+name: Create Cleanup Issue
+
+on:
+  workflow_dispatch:
+    inputs:
+      AUTO_CREATE:
+        description: '自动创建 Issue'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Scan and create cleanup issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Step 1: Run sync to get project statuses
+          node src/generators/sync.js || true
+
+          # Step 2: Use a Node script to scan projects and create issue
+          node -e "
+          import fs from 'node:fs';
+          import { parse, stringify } from 'yaml';
+          import { loadAllItems } from './src/data/yaml-manager.js';
+          import { checkItems, checkRepoStatus } from './src/checkers/link-checker.js';
+
+          const THREE_YEARS_AGO = new Date(Date.now() - 3 * 365.25 * 24 * 60 * 60 * 1000);
+
+          const main = async () => {
+            const allItems = loadAllItems();
+            console.log('Loading ' + allItems.length + ' projects...');
+
+            const checked = await checkItems(allItems);
+            const withStatus = await checkRepoStatus(checked);
+
+            const archived = [];
+            const inactive = [];
+            const archivedInactive = [];
+
+            for (const item of withStatus) {
+              if (item.__archived && item.__inactive) {
+                archivedInactive.push(item);
+              } else if (item.__archived) {
+                archived.push(item);
+              } else if (item.__inactive) {
+                inactive.push(item);
+              }
+            }
+
+            const total = archivedInactive.length + archived.length + inactive.length;
+            if (total === 0) {
+              console.log('No projects to clean up.');
+              return;
+            }
+
+            const formatItem = (item) => {
+              const url = item.__normalizedLink;
+              let name = item.name;
+              if (item.from === 'github') {
+                name = item.link;
+              } else if (item.from === 'greasyfork') {
+                const idMatch = String(item.link).match(/^(\d+)/);
+                name = idMatch ? idMatch[1] : item.name;
+              }
+              return '- [x] [' + name + '](' + url + ')';
+            };
+
+            let body = '## Cleanup Review\\n\\n';
+            body += '请**取消勾选**要移除的项目。默认全部保留。\\n\\n';
+
+            if (archivedInactive.length > 0) {
+              body += '### 归档且超过3年未更新\\n\\n';
+              body += archivedInactive.map(formatItem).join('\\n') + '\\n\\n';
+            }
+            if (archived.length > 0) {
+              body += '### 已归档\\n\\n';
+              body += archived.map(formatItem).join('\\n') + '\\n\\n';
+            }
+            if (inactive.length > 0) {
+              body += '### 超过3年未更新\\n\\n';
+              body += inactive.map(formatItem).join('\\n') + '\\n\\n';
+            }
+
+            body += '完成后评论：\`@github-actions[bot] apply cleanup\`\\n';
+
+            // Create issue via GitHub API
+            const res = await fetch('https://api.github.com/repos/' + process.env.GITHUB_REPOSITORY + '/issues', {
+              method: 'POST',
+              headers: {
+                'Authorization': 'Bearer ' + process.env.GITHUB_TOKEN,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                title: '🧹 Cleanup Review - ' + new Date().toISOString().slice(0, 10),
+                body: body,
+                labels: ['cleanup'],
+              }),
+            });
+            const data = await res.json();
+            console.log('Issue created: ' + data.html_url);
+          };
+
+          main().catch(console.error);
+          "

@@ -1,0 +1,112 @@
+name: Apply Cleanup
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  apply-cleanup:
+    if: >
+      github.event.issue.author_association == 'OWNER' &&
+      contains(github.event.comment.body, '@github-actions[bot] apply cleanup')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse issue and apply cleanup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          ISSUE_BODY=$(gh issue view "$ISSUE_NUMBER" --json body --jq '.body')
+
+          # Extract unchecked items (those to be removed)
+          # Format: - [ ] [name](url)
+          REMOVALS=$(echo "$ISSUE_BODY" | grep -E '^\- \[ \]' | grep -oE 'https?://[^)]+' || true)
+
+          if [ -z "$REMOVALS" ]; then
+            echo "No items selected for removal. All projects will be kept."
+            exit 0
+          fi
+
+          echo "Projects to remove:"
+          echo "$REMOVALS"
+
+          # Use Node.js to parse YAML and remove items
+          node -e "
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { parse, stringify } from 'yaml';
+          import { loadYamlArray, writeYamlArray } from './src/data/yaml-manager.js';
+          import { normalizeLink } from './src/validators/item-validator.js';
+          import { findYamlFiles } from './src/utils/file-utils.js';
+
+          const removals = process.env.REMOVALS.trim().split('\n');
+          const removalSet = new Set(removals.map(u => u.trim()));
+
+          // Find all YAML files
+          const rawDir = path.join(process.cwd(), 'RAW_DATA');
+          function findYamlFiles(dir) {
+            const files = [];
+            function walk(d) {
+              for (const item of fs.readdirSync(d)) {
+                const full = path.join(d, item);
+                const stat = fs.statSync(full);
+                if (stat.isDirectory()) walk(full);
+                else if (item.endsWith('.yml')) files.push(full);
+              }
+            }
+            walk(dir);
+            return files;
+          }
+
+          const ymlFiles = findYamlFiles(rawDir);
+          let removedCount = 0;
+
+          for (const filePath of ymlFiles) {
+            const items = loadYamlArray(filePath);
+            const filtered = items.filter((item) => {
+              const normalized = normalizeLink(item.from, item.link);
+              if (removalSet.has(normalized)) {
+                console.log('Removing: ' + item.name + ' (' + normalized + ') from ' + path.basename(filePath));
+                removedCount++;
+                return false;
+              }
+              return true;
+            });
+
+            if (filtered.length !== items.length) {
+              writeYamlArray(filePath, filtered);
+            }
+          }
+
+          console.log('Total removed: ' + removedCount);
+          "
+          REMOVALS: "$REMOVALS"
+
+      - name: Create PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! git diff --quiet HEAD -- RAW_DATA/; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            BRANCH_NAME="cleanup-$(date +%Y%m%d-%H%M%S)"
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+
+            git checkout -b "$BRANCH_NAME"
+            git add RAW_DATA/
+            git commit -m "cleanup: remove archived and inactive projects"
+            git push -u origin "$BRANCH_NAME"
+
+            # Create PR that links to and closes the issue
+            gh pr create \
+              --title "🧹 Apply cleanup for #$ISSUE_NUMBER" \
+              --body "Auto-generated cleanup PR. Fixes #$ISSUE_NUMBER" \
+              --base main \
+              --head "$BRANCH_NAME"
+          else
+            echo "No changes to commit."
+          fi

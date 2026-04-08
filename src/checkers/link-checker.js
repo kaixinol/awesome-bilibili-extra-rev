@@ -204,10 +204,10 @@ export const checkRepoStatus = async (items) => {
   const githubItems = items.filter((item) => item.from === 'github');
   total += githubItems.length;
 
+  let ghCursor = 0;
   const ghWorker = async () => {
-    let cursor = 0;
-    while (cursor < githubItems.length) {
-      const idx = cursor++;
+    while (ghCursor < githubItems.length) {
+      const idx = ghCursor++;
       const item = githubItems[idx];
       const status = await fetchGithubStatus(item.link);
 
@@ -236,10 +236,10 @@ export const checkRepoStatus = async (items) => {
   const gfItems = items.filter((item) => item.from === 'greasyfork');
   total += gfItems.length;
 
+  let gfCursor = 0;
   const gfWorker = async () => {
-    let cursor = 0;
-    while (cursor < gfItems.length) {
-      const idx = cursor++;
+    while (gfCursor < gfItems.length) {
+      const idx = gfCursor++;
       const item = gfItems[idx];
       const scriptId = extractGfId(item.link);
       if (!scriptId) {
