@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: pnpm
@@ -34,24 +34,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Step 1: Run sync to get project statuses
-          node src/generators/sync.js || true
-
-          # Step 2: Use a Node script to scan projects and create issue
           node -e "
-          import fs from 'node:fs';
-          import { parse, stringify } from 'yaml';
           import { loadAllItems } from './src/data/yaml-manager.js';
-          import { checkItems, checkRepoStatus } from './src/checkers/link-checker.js';
-
-          const THREE_YEARS_AGO = new Date(Date.now() - 3 * 365.25 * 24 * 60 * 60 * 1000);
+          import { checkRepoStatus } from './src/checkers/link-checker.js';
 
           const main = async () => {
             const allItems = loadAllItems();
             console.log('Loading ' + allItems.length + ' projects...');
 
-            const checked = await checkItems(allItems);
-            const withStatus = await checkRepoStatus(checked);
+            const withStatus = await checkRepoStatus(allItems);
 
             const archived = [];
             const inactive = [];
