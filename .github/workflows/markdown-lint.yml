@@ -1,26 +1,29 @@
-name: Markdown lint action
+name: Markdown Lint
 on:
   push:
     branches:
       - main
     paths:
       - 'README_RAW.md'
+      - 'CONTRIBUTING.md'
+      - '.markdownlint.json'
+      - '.github/workflows/markdown-lint.yml'
   pull_request:
     types: [opened, synchronize]
     branches:
       - main
     paths:
       - 'README_RAW.md'
+      - 'CONTRIBUTING.md'
+      - '.markdownlint.json'
+      - '.github/workflows/markdown-lint.yml'
 jobs:
-  build:
+  markdown-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
-          node-version: '22.x'
-      - run: npm install -g markdownlint-cli
-      - uses: xt0rted/markdownlint-problem-matcher@v1
-      - run: |
-          markdownlint README_RAW.md
+          globs: |
+            README_RAW.md
+            CONTRIBUTING.md

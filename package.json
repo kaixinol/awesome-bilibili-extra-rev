@@ -2,29 +2,30 @@
   "name": "awesome-bilibili-extra",
   "version": "1.1.0",
   "description": "> 收集一些让我们在浏览B站时更加方便的浏览器扩展/脚本.",
+  "type": "module",
   "main": "README.md",
   "scripts": {
-    "test": "node test/md2yml.js",
-    "build": "node src/double-link-checker.js && node src/commit.js && node src/sort-format.js && node src/updateUser.js",
-    "link-checker": "node src/link-checker.js",
-    "double-link-checker": "node src/double-link-checker.js",
-    "sort-format": "node src/sort-format.js",
-    "push": "git add . && git commit -F CHANGELOG.md && git push"
+    "sync": "node src/generators/sync.js",
+    "sync:proxy": "HTTPS_PROXY=http://127.0.0.1:7897 node src/generators/sync.js",
+    "check:yaml": "node src/generators/check-yaml.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HCLonely/awesome-bilibili-extra.git"
+    "url": "git+https://github.com/kaixinol/awesome-bilibili-extra.git"
   },
   "author": "HCLonely",
+  "contributors": [
+    "Kaesinol"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/HCLonely/awesome-bilibili-extra/issues"
+    "url": "https://github.com/kaixinol/awesome-bilibili-extra/issues"
   },
-  "homepage": "https://github.com/HCLonely/awesome-bilibili-extra#readme",
+  "homepage": "https://github.com/kaixinol/awesome-bilibili-extra#readme",
   "devDependencies": {
-    "axios": "^0.26.0",
-    "dayjs": "^1.10.8",
-    "pangu": "^4.0.7",
-    "yaml": "^2.7.1"
-  }
+    "axios": "^1.14.0",
+    "dayjs": "^1.11.20",
+    "yaml": "^2.8.3"
+  },
+  "packageManager": "pnpm@10.33.0"
 }
