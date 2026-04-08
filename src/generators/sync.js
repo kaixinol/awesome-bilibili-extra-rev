@@ -142,7 +142,7 @@ const generateReadme = (validItems) => {
         ? `![最近更新](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F${item.link}&search=%3Cdd%20class%3D%22script-(list%7Cshow)-updated-date%22%3E%3Cspan%3E%3Crelative-time.*%3F%3E(.*%3F)%3C%2Frelative-time%3E%3C%2Fspan%3E%3C%2Fdd%3E&replace=%242&style=flat&label=)`
         : '';
       const icons = addIcon(item.icon || []);
-      return `| [${item.name}](${link}) | ${desc} | ${icons} | ${stars} | ${lastCommit} |`;
+      return `| [${displayName}](${link}) | ${desc} | ${icons} | ${stars} | ${lastCommit} |`;
     }).join('\n');
     result = result.replaceAll(placeholder, `${header}\n${rows}`);
   }
