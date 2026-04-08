@@ -14,74 +14,41 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Parse issue and apply cleanup
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "*"
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Extract unchecked items from issue body
+        id: extract-removals
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ISSUE_NUMBER="${{ github.event.issue.number }}"
           ISSUE_BODY=$(gh issue view "$ISSUE_NUMBER" --json body --jq '.body')
-
-          # Extract unchecked items (those to be removed)
-          # Format: - [ ] [name](url)
           REMOVALS=$(echo "$ISSUE_BODY" | grep -E '^\- \[ \]' | grep -oE 'https?://[^)]+' || true)
-
+          echo "removals=$(echo "$REMOVALS" | tr '\n' '|')" >> "$GITHUB_OUTPUT"
           if [ -z "$REMOVALS" ]; then
             echo "No items selected for removal. All projects will be kept."
             exit 0
           fi
-
           echo "Projects to remove:"
           echo "$REMOVALS"
 
-          # Use Node.js to parse YAML and remove items
-          node -e "
-          import fs from 'node:fs';
-          import path from 'node:path';
-          import { loadYamlArray, writeYamlArray } from './src/data/yaml-manager.js';
-          import { normalizeLink } from './src/validators/item-validator.js';
-
-          const removals = process.env.REMOVALS.trim().split('\n');
-          const removalSet = new Set(removals.map(u => u.trim()));
-
-          // Find all YAML files
-          const rawDir = path.join(process.cwd(), 'RAW_DATA');
-          function walkDir(d) {
-            const files = [];
-            function walk(dd) {
-              for (const item of fs.readdirSync(dd)) {
-                const full = path.join(dd, item);
-                const stat = fs.statSync(full);
-                if (stat.isDirectory()) walk(full);
-                else if (item.endsWith('.yml')) files.push(full);
-              }
-            }
-            walk(d);
-            return files;
-          }
-
-          const ymlFiles = walkDir(rawDir);
-          let removedCount = 0;
-
-          for (const filePath of ymlFiles) {
-            const items = loadYamlArray(filePath);
-            const filtered = items.filter((item) => {
-              const normalized = normalizeLink(item.from, item.link);
-              if (removalSet.has(normalized)) {
-                console.log('Removing: ' + item.name + ' (' + normalized + ') from ' + path.basename(filePath));
-                removedCount++;
-                return false;
-              }
-              return true;
-            });
-
-            if (filtered.length !== items.length) {
-              writeYamlArray(filePath, filtered);
-            }
-          }
-
-          console.log('Total removed: ' + removedCount);
-          "
-          REMOVALS: "$REMOVALS"
+      - name: Apply cleanup
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REMOVALS: ${{ steps.extract-removals.outputs.removals }}
+        run: |
+          # Convert pipe-separated back to newline
+          export REMOVALS=$(echo "$REMOVALS" | tr '|' '\n' | sed '/^$/d')
+          node src/generators/apply-cleanup.js
 
       - name: Create PR
         env:
