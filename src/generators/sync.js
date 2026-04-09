@@ -153,9 +153,9 @@ const generateReadme = (validItems) => {
     const header = '| 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |\n|:--- |:--- |:--- |:--- |:--- |';
     const rows = sorted.map((item) => {
       const link = item.__normalizedLink;
-      let displayName = item.name;
-      if (item.__archived) displayName = `~~${item.name}~~`;
-      else if (item.__inactive) displayName = `*${item.name}*`;
+      let displayName = item.name.replace(/\|/g, '&#124;');
+      if (item.__archived) displayName = `~~${item.name.replace(/\|/g, '&#124;')}~~`;
+      else if (item.__inactive) displayName = `*${item.name.replace(/\|/g, '&#124;')}*`;
       const desc = processDescription(item.description);
       const stars = item.from === 'github'
         ? `![Star](https://img.shields.io/github/stars/${item.link}?&label=)`
