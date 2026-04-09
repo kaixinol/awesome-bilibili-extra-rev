@@ -110,6 +110,26 @@ const updateYamlFiles = (changes) => {
 
 // ==================== 生成 README ====================
 
+// Category → heading level + display title mapping
+const CATEGORY_META = {
+  '浏览器扩展/全站扩展':     { level: 3, title: '全站扩展' },
+  '浏览器扩展/主站扩展':     { level: 3, title: '主站扩展' },
+  '浏览器扩展/直播扩展':     { level: 3, title: '直播扩展' },
+  '篡改猴脚本/全站脚本':     { level: 3, title: '全站脚本' },
+  '篡改猴脚本/主站脚本':     { level: 3, title: '主站脚本' },
+  '篡改猴脚本/直播脚本':     { level: 3, title: '直播脚本' },
+  '下载工具':               { level: 2, title: '下载工具' },
+  '直播相关工具':            { level: 2, title: '直播相关工具' },
+  'UP_工具':               { level: 2, title: 'UP 工具' },
+  '开发':                 { level: 2, title: '开发' },
+  '第三方客户端':            { level: 2, title: '第三方客户端' },
+  '每日任务':               { level: 2, title: '每日任务' },
+  '监听与推送':             { level: 2, title: '监听与推送' },
+  '数据分析':               { level: 2, title: '数据分析' },
+  '相关插件':               { level: 2, title: '相关插件' },
+  '其他':                 { level: 2, title: '其他' },
+};
+
 const generateReadme = (validItems) => {
   const template = readText(README_TEMPLATE);
   const grouped = {};
@@ -120,9 +140,15 @@ const generateReadme = (validItems) => {
     grouped[category].push(item);
   }
 
+  const sortedKeys = Object.keys(grouped).sort();
+
   let result = template;
-  for (const [category, categoryItems] of Object.entries(grouped)) {
+  for (const category of sortedKeys) {
+    const categoryItems = grouped[category];
     const placeholder = `{{ RAW_DATA/${category}.yml }}`;
+    const meta = CATEGORY_META[category] || { level: 2, title: category };
+    const heading = `${'#'.repeat(meta.level)} ${meta.title}`;
+
     const sorted = categoryItems.sort((a, b) => a.name.localeCompare(b.name));
     const header = '| 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |\n|:--- |:--- |:--- |:--- |:--- |';
     const rows = sorted.map((item) => {
@@ -144,7 +170,9 @@ const generateReadme = (validItems) => {
       const icons = addIcon(item.icon || []);
       return `| [${displayName}](${link}) | ${desc} | ${stars} | ${lastCommit} | ${icons} |`;
     }).join('\n');
-    result = result.replaceAll(placeholder, `${header}\n${rows}`);
+
+    const table = `<details>\n<summary>${meta.title}</summary>\n\n${heading}\n\n${header}\n${rows}\n\n</details>`;
+    result = result.replaceAll(placeholder, table);
   }
 
   return result;
