@@ -147,7 +147,7 @@ const generateReadme = (validItems) => {
     const categoryItems = grouped[category];
     const placeholder = `{{ RAW_DATA/${category}.yml }}`;
     const meta = CATEGORY_META[category] || { level: 2, title: category };
-    const heading = `${'#'.repeat(meta.level)} ${meta.title}`;
+    // const heading = `${'#'.repeat(meta.level)} ${meta.title}`;
 
     const sorted = categoryItems.sort((a, b) => a.name.localeCompare(b.name));
     const header = '| 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |\n|:--- |:--- |:--- |:--- |:--- |';
@@ -162,16 +162,14 @@ const generateReadme = (validItems) => {
         : item.from === 'greasyfork'
         ? `![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F${item.link}&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20)`
         : '';
-      const lastCommit = item.from === 'github'
-        ? `![最近更新](https://img.shields.io/github/last-commit/${item.link}?label=)`
-        : item.from === 'greasyfork'
-        ? `![最近更新](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F${item.link}&search=%3Cdd%20class%3D%22script-(list%7Cshow)-updated-date%22%3E%3Cspan%3E%3Crelative-time.*%3F%3E(.*%3F)%3C%2Frelative-time%3E%3C%2Fspan%3E%3C%2Fdd%3E&replace=%242&style=flat&label=)`
-        : '';
+      const lastCommit = item.__updatedAt
+        ? new Date(item.__updatedAt).toISOString().slice(2, 10).replace(/-/g, '/')
+        : '-';
       const icons = addIcon(item.icon || []);
       return `| [${displayName}](${link}) | ${desc} | ${stars} | ${lastCommit} | ${icons} |`;
     }).join('\n');
 
-    const table = `<details>\n<summary>${meta.title}</summary>\n\n${heading}\n\n${header}\n${rows}\n\n</details>`;
+    const table = `<details>\n<summary>${meta.title}</summary>\n\n${header}\n${rows}\n\n</details>`;
     result = result.replaceAll(placeholder, table);
   }
 
