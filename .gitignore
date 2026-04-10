@@ -3,3 +3,4 @@ node_modules/
 message.txt
 
 test/
+env.sh

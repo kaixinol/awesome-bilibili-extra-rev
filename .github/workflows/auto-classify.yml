@@ -1,0 +1,123 @@
+name: Auto Classify New Tool
+
+on:
+  workflow_dispatch:
+    inputs:
+      DRY_RUN:
+        description: '是否仅测试运行（不创建 PR，不修改 YAML）'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Find and process pending issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_API_URL: ${{ secrets.LLM_API_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          DRY_RUN: ${{ github.event.inputs.DRY_RUN || 'true' }}
+        run: |
+          DRY_RUN="${DRY_RUN}"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "🧪 DRY RUN mode — will not create PRs or modify YAML"
+          fi
+
+          # Get all open issues with 'new-tool' label but WITHOUT 'done' label
+          PENDING=$(gh issue list --label "new-tool" --state open --limit 100 --json number,title,body --jq '.[] | select(.labels | map(.name) | index("done") | not)')
+
+          if [ -z "$PENDING" ]; then
+            echo "✅ No pending issues to process."
+            exit 0
+          fi
+
+          echo "Found pending issues. Processing..."
+
+          # Process each issue
+          echo "$PENDING" | jq -c '.' | while read -r issue; do
+            ISSUE_NUM=$(echo "$issue" | jq -r '.number')
+            ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
+            ISSUE_BODY=$(echo "$issue" | jq -r '.body')
+
+            echo ""
+            echo "─────────────────────────────"
+            echo "Processing #${ISSUE_NUM}: ${ISSUE_TITLE}"
+            echo "─────────────────────────────"
+
+            export ISSUE_BODY
+            node src/tools/auto-classify.mjs
+
+            if git diff --quiet HEAD -- RAW_DATA/; then
+              echo "No YAML changes for #${ISSUE_NUM}."
+              if [ "$DRY_RUN" != "true" ]; then
+                gh issue comment "$ISSUE_NUM" \
+                  --body "🤖 No new Bilibili-related tools found, or all items already exist."
+              fi
+            else
+              if [ "$DRY_RUN" = "true" ]; then
+                echo "🧪 DRY RUN: would create PR for #${ISSUE_NUM}, but skipping."
+                echo "--- YAML diff ---"
+                git diff -- RAW_DATA/
+                echo "--- End diff ---"
+              else
+                BRANCH_NAME="classify-issue-${ISSUE_NUM}-$(date +%s)"
+                git config user.name "github-actions[bot]"
+                git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                git checkout -b "$BRANCH_NAME"
+                git add RAW_DATA/
+                git commit -m "feat: auto-classify tools from #${ISSUE_NUM}"
+                git push -u origin "$BRANCH_NAME"
+
+                PR_URL=$(gh pr create \
+                  --title "🔧 Auto-classify tools from #${ISSUE_NUM}" \
+                  --body "Auto-generated PR from issue #${ISSUE_NUM}: ${ISSUE_TITLE}
+
+Fixes #${ISSUE_NUM}" \
+                  --base main \
+                  --head "$BRANCH_NAME")
+
+                gh issue comment "$ISSUE_NUM" \
+                  --body "🤖 Classification complete! [PR created](${PR_URL})"
+
+                git checkout main
+              fi
+            fi
+
+            # Add 'done' label only in non-dry-run mode
+            if [ "$DRY_RUN" != "true" ]; then
+              gh issue edit "$ISSUE_NUM" --add-label "done"
+            fi
+          done
+
+          echo ""
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "🧪 DRY RUN complete. No changes were made."
+          else
+            echo "✅ All pending issues processed."
+          fi

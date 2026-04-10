@@ -1,7 +1,7 @@
 name: 推荐新项目
 description: 推荐一个新的项目
 title: "[New Item]: "
-labels: ["new"]
+labels: ["new-tool"]
 body:
   - type: markdown
     attributes:

@@ -7,7 +7,9 @@
   "scripts": {
     "sync": "node src/generators/sync.js",
     "sync:proxy": "HTTPS_PROXY=http://127.0.0.1:7897 node src/generators/sync.js",
-    "check:yaml": "node src/generators/check-yaml.js"
+    "check:yaml": "node src/generators/check-yaml.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -23,8 +25,10 @@
   },
   "homepage": "https://github.com/kaixinol/awesome-bilibili-extra#readme",
   "devDependencies": {
+    "ajv": "^8.18.0",
     "axios": "^1.14.0",
     "dayjs": "^1.11.20",
+    "vitest": "^4.1.4",
     "yaml": "^2.8.3"
   },
   "packageManager": "pnpm@10.33.0"
