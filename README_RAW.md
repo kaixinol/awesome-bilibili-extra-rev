@@ -6,13 +6,17 @@
 * **_斜体文本_**: 项目已超过 3 年未更新
 * **删除线文本**: 项目已被作者存档（归档）
 ## 设置
+
 <section id="settings">
+
 <p id="setting-note">如果你看到这行文字，代表你没有安装这个<a href="https://greasyfork.org/zh-CN/scripts/573352-awesome-bilibili-extra-settings-filter">油猴脚本</a></p>
 
 - [ ] 隐藏超过三年未更新的项目
 
 - [ ] 隐藏已存档的项目
+
 </section>
+
 <details>
   <summary><b>图标说明</b></summary>
   <ul>

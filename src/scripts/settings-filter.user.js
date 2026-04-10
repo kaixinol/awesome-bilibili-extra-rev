@@ -1,90 +1,86 @@
 // ==UserScript==
 // @name         Awesome Bilibili Extra Settings Filter
 // @namespace    awesome-bilibili-extra
-// @version      0.2
+// @version      0.3
 // @description  根据样式（斜体/删除线）过滤项目列表
 // @author       Kaesinol
 // @match        https://github.com/kaixinol/awesome-bilibili-extra-rev
 // @run-at       document-idle
-// @grant        GM_setValue
-// @grant        GM_getValue
+// @grant        none
 // @license MIT
 // ==/UserScript==
-
 (function () {
   'use strict';
 
-  function applyFilters() {
-    const hideInactive = GM_getValue('hide-inactive', false);
-    const hideArchived = GM_getValue('hide-archived', false);
+  function bindLabelClick(input) {
+    const parent = input.parentElement;
+    if (!parent) return;
 
-    // 更新 checkbox 状态
-    const inactiveBox = document.getElementById('hide-inactive');
-    const archivedBox = document.getElementById('hide-archived');
-    if (inactiveBox) inactiveBox.checked = hideInactive;
-    if (archivedBox) archivedBox.checked = hideArchived;
+    parent.style.cursor = 'pointer';
 
-    // 获取所有表格行
-    const rows = document.querySelectorAll('table tr');
-
-    rows.forEach((row) => {
-      const link = row.querySelector('td a');
-      if (!link) return;
-
-      // 检查是否包含斜体或删除线
-      // GitHub Markdown: *text* -> <em>, ~~text~~ -> <del>
-      const isItalic = window.getComputedStyle(link).fontStyle === 'italic' || link.closest('em') || link.querySelector('em');
-      const isStrike = window.getComputedStyle(link).textDecorationLine.includes('line-through') || link.closest('del, s') || link.querySelector('del, s');
-
-      let shouldHide = false;
-      if (hideInactive && isItalic) shouldHide = true;
-      if (hideArchived && isStrike) shouldHide = true;
-
-      row.style.display = shouldHide ? 'none' : '';
+    parent.addEventListener('click', (e) => {
+      if (e.target === input) return;
+      input.checked = !input.checked;
+      input.dispatchEvent(new Event('change'));
     });
   }
 
-  function attachListeners() {
-    const inactiveBox = document.getElementById('hide-inactive');
-    const archivedBox = document.getElementById('hide-archived');
+  function applyFilters(checkbox1, checkbox2) {
+    const tables = document.querySelectorAll('markdown-accessiblity-table table');
 
-    if (inactiveBox) {
-      inactiveBox.addEventListener('change', (e) => {
-        GM_setValue('hide-inactive', e.target.checked);
-        applyFilters();
-      });
-    }
+    tables.forEach(table => {
+      const rows = table.querySelectorAll('tbody tr');
 
-    if (archivedBox) {
-      archivedBox.addEventListener('change', (e) => {
-        GM_setValue('hide-archived', e.target.checked);
-        applyFilters();
+      rows.forEach(row => {
+        const firstCell = row.querySelector('td:first-child');
+        if (!firstCell) return;
+
+        let hide = false;
+
+        if (checkbox1.checked && firstCell.querySelector('em')) {
+          hide = true;
+        }
+
+        if (checkbox2.checked && firstCell.querySelector('del, s')) {
+          hide = true;
+        }
+
+        row.style.display = hide ? 'none' : '';
       });
-    }
+    });
   }
 
   function init() {
-    // 1. 更新提示文本 (如果脚本成功运行)
-    const note = document.getElementById('setting-note');
-    if (note) {
-      note.innerText = '过滤器已成功加载 ✅';
-      note.style.color = 'green';
-    }
+    const note = document.querySelector('#user-content-setting-note');
+    const inputs = document.querySelectorAll('#user-content-settings input');
 
-    // 2. 绑定 Checkbox 事件
-    attachListeners();
+    if (!note || inputs.length < 2) return;
 
-    // 3. 初始化运行过滤
-    applyFilters();
+    note.textContent = '已加载过滤器✅';
 
-    // 4. 监听 DOM 变化
-    new MutationObserver(() => {
-        if (!document.getElementById('hide-inactive')) {
-            attachListeners();
-        }
-        applyFilters();
-    }).observe(document.body, { childList: true, subtree: true });
+    inputs.forEach(i => i.disabled = false);
+
+    const checkbox1 = inputs[0];
+    const checkbox2 = inputs[1];
+
+    bindLabelClick(checkbox1);
+    bindLabelClick(checkbox2);
+
+    const run = () => applyFilters(checkbox1, checkbox2);
+
+    checkbox1.addEventListener('change', run);
+    checkbox2.addEventListener('change', run);
+
+    run();
   }
 
-  init();
+  // ✅ 关键：监听 GitHub PJAX 页面切换
+  document.addEventListener('pjax:end', init);
+
+  // ✅ 初始加载
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
