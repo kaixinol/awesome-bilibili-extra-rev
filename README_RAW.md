@@ -64,6 +64,12 @@
     <li>
       <img src="svg/docker.svg?raw=true" alt="Docker">: 可通过Docker一键部署
     </li>
+    <li>
+      <b><i>斜体文本</i></b>: 项目已超过 3 年未更新
+    </li>
+    <li>
+      <b><s>删除线文本</s></b>: 项目已被作者存档（归档）
+    </li>
   </ul>
 </details>
 
