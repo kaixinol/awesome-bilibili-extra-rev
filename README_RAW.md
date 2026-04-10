@@ -5,6 +5,11 @@
 > 各项目之间使用 Javascript `Array.prototype.sort()`方法进行排序，无其他意义.
 * **_斜体文本_**: 项目已超过 3 年未更新
 * **删除线文本**: 项目已被作者存档（归档）
+
+此项目基于已经删除的[HCLonely/awesome-bilibili-extra](https://github.com/HCLonely/awesome-bilibili-extra/)项目Fork而来，并添加了强大的CI自动化流程，便于自动清理失效的死项目（以及改名）。
+
+提交新项目直接提交 Issue 即可，请勿提交 PR 修改 `README.md`。
+
 ## 设置
 
 <section id="settings">
@@ -193,4 +198,4 @@
 
 ## 贡献
 
-请查看[贡献指南](https://github.com/kaixinol/awesome-bilibili-extra/blob/master/CONTRIBUTING.md).
+请查看[贡献指南](CONTRIBUTING.md).
