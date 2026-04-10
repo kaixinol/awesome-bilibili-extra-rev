@@ -3,6 +3,24 @@
 > 收集一些让我们在使用B站时更加方便的浏览器扩展/脚本/程序.
 >
 > 各项目之间使用 Javascript `Array.prototype.sort()`方法进行排序，无其他意义.
+* **_斜体文本_**: 项目已超过 3 年未更新
+* **删除线文本**: 项目已被作者存档（归档）
+
+此项目基于已经删除的[HCLonely/awesome-bilibili-extra](https://github.com/HCLonely/awesome-bilibili-extra/)项目Fork而来，并添加了强大的CI自动化流程，便于自动清理失效的死项目（以及改名）。
+
+提交新项目直接提交 Issue 即可，请勿提交 PR 修改 `README.md`。
+
+## 设置
+
+<section id="settings">
+
+<p id="setting-note">如果你看到这行文字，代表你没有安装这个<a href="https://greasyfork.org/zh-CN/scripts/573352-awesome-bilibili-extra-settings-filter">油猴脚本</a></p>
+
+- [ ] 隐藏超过三年未更新的项目
+
+- [ ] 隐藏已存档的项目
+
+</section>
 
 <details>
   <summary><b>图标说明</b></summary>
@@ -123,7 +141,7 @@
 | [🚀 B站空降广告跳转助手](https://github.com/dangxingyu/bilibili_ad_jumper) | 智能识别弹幕时间戳，一键跳过广告片段. | ![Star](https://img.shields.io/github/stars/dangxingyu/bilibili_ad_jumper?&label=) | 25/07/17 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*audio-only-bilibili*](https://github.com/cyio/audio-only-bilibili) | Biliblili 网页端使用音频模式. | ![Star](https://img.shields.io/github/stars/cyio/audio-only-bilibili?&label=) | 23/03/11 | ![TypeScript](svg/tsnode.svg?raw=true) |
 | [~~BewlyBewly~~](https://github.com/BewlyBewly/BewlyBewly) | 只需对您的 Bilibili 主页进行一些小更改即可. | ![Star](https://img.shields.io/github/stars/BewlyBewly/BewlyBewly?&label=) | 25/02/26 | ![Vue](svg/vue.svg?raw=true) |
-| [BewlyCat](https://github.com/keleus/BewlyCat) | BewlyCat——基于BewlyBewly开发的Bilibili拓展. | ![Star](https://img.shields.io/github/stars/keleus/BewlyCat?&label=) | 26/04/09 | ![Vue](svg/vue.svg?raw=true) |
+| [BewlyCat](https://github.com/keleus/BewlyCat) | BewlyCat——基于BewlyBewly开发的Bilibili拓展. | ![Star](https://img.shields.io/github/stars/keleus/BewlyCat?&label=) | 26/04/10 | ![Vue](svg/vue.svg?raw=true) |
 | [*bili-guessYouLike*](https://github.com/chitosai/bili-guessYouLike) | 为PC版bilibili首页增加「猜你喜欢」. | ![Star](https://img.shields.io/github/stars/chitosai/bili-guessYouLike?&label=) | 22/01/12 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Bili-Insight](https://github.com/2951121599/Bili-Insight) | B站视频内容总结预览插件：通过使用这个插件来更快地了解视频的内容. | ![Star](https://img.shields.io/github/stars/2951121599/Bili-Insight?&label=) | 23/07/12 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [bilibili Ads Remover](https://github.com/14Kay/chrome-bili-ads-remove) | 基于接口返回的动态广告移除chrome插件. | ![Star](https://img.shields.io/github/stars/14Kay/chrome-bili-ads-remove?&label=) | 26/03/17 | ![TypeScript](svg/tsnode.svg?raw=true) |
@@ -167,7 +185,6 @@
 | 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |
 |:--- |:--- |:--- |:--- |:--- |
 | [bilibili-fullscreen-sc](https://github.com/eeelester/bilibili-fullscreen-sc) | 在B站看直播全屏时展示SC. | ![Star](https://img.shields.io/github/stars/eeelester/bilibili-fullscreen-sc?&label=) | 25/07/03 | ![TypeScript](svg/tsnode.svg?raw=true) |
-| [~~bilibili-live-recorder~~](https://github.com/zhw2590582/bilibili-live-recorder) | Bilibili 录播姬. | ![Star](https://img.shields.io/github/stars/zhw2590582/bilibili-live-recorder?&label=) | 22/05/30 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [bilibili-vup-stream-enhancer](https://github.com/eric2788/bilibili-vup-stream-enhancer) | 哔哩哔哩直播同传字幕过滤插件. | ![Star](https://img.shields.io/github/stars/eric2788/bilibili-vup-stream-enhancer?&label=) | 25/12/15 | ![JavaScript](svg/javascript.svg?raw=true) |
 
 </details>
@@ -213,6 +230,7 @@
 | [Bilibili Blocked Videos By Tags](https://github.com/tjxwork/bilibili_blocked_videos_by_tags) | 对Bilibili.com的视频卡片元素，以标签、标题、时长、UP主名称、UP主UID 来判断匹配，添加屏蔽叠加层. | ![Star](https://img.shields.io/github/stars/tjxwork/bilibili_blocked_videos_by_tags?&label=) | 25/11/30 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Bilibili CC字幕工具](https://greasyfork.org/zh-CN/scripts/378513) | 可以在B站加载外挂本地字幕、下载B站的CC字幕，旧版B站播放器可启用CC字幕. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F378513&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 25/09/27 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [BILIBILI MoeUseHelper](https://greasyfork.org/zh-CN/scripts/408526) | 一键开关弹幕&#124;播放暂停&#124;调整倍速&#124;开关全屏&#124;能让你用哔哩哔哩更加愉快的助手. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F408526&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 23/07/20 | ![JavaScript](svg/javascript.svg?raw=true) |
+| [Bilibili Original Avatar Downloader / Viewer](https://greasyfork.org/zh-CN/scripts/561862) | Left-click to download JPG, right-click to open the original image in a new tab. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F561862&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 26/01/08 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Bilibili Purify / Bilibili 纯粹化](https://github.com/RevenLiu/BilibiliPurify) | 一个用于Bilibili平台的篡改猴脚本。以一种直接的方式抵抗商业化平台对人类大脑的利用。包含重定向首页、隐藏广告、隐藏推荐视频、评论区反成瘾/情绪控制锁等功能，削弱平台/媒体对你心理的操控，恢复你对自己注意力和思考的主导权. | ![Star](https://img.shields.io/github/stars/RevenLiu/BilibiliPurify?&label=) | 26/04/06 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*Bilibili Vesiter*](https://greasyfork.org/zh-CN/scripts/425696) | 哔哩哔哩移除主站广告、移除播放页广告、自动宽屏、自动全屏、自动播放、逐帧播放. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F425696&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 21/11/08 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Bilibili 一键已读](https://greasyfork.org/zh-CN/scripts/429152) | 一键设置所有会话已读. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F429152&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 25/06/18 | ![JavaScript](svg/javascript.svg?raw=true) |
@@ -259,6 +277,7 @@
 | [BiliHealth Scan (一键三连健康探针)](https://github.com/xiangye277/BiliHealth-Scan) | 显示哔哩哔哩 点赞率、投币率、收藏率、转发率及Steam综合评级（包括各个B站网页分区）. | ![Star](https://img.shields.io/github/stars/xiangye277/BiliHealth-Scan?&label=) | 25/06/13 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Bilimit](https://github.com/ABitGinger/Bilimit) | 这是一个油猴脚本，旨在通过自主限制，减少在B站无用内容上浪费的时间. | ![Star](https://img.shields.io/github/stars/ABitGinger/Bilimit?&label=) | 25/02/27 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [BiliReveal](https://github.com/maxchang3/BiliReveal) | 在哔哩哔哩网页版显示 IP 属地. | ![Star](https://img.shields.io/github/stars/maxchang3/BiliReveal?&label=) | 26/04/01 | ![TypeScript](svg/tsnode.svg?raw=true) |
+| [BiliReveal - 哔哩哔哩网页版显示 IP 属地](https://greasyfork.org/zh-CN/scripts/466815) | 我不喜欢 IP 属地，但是你手机都显示了，为什么电脑不显示呢？在哔哩哔哩网页版大部分场景中显示 IP 属地. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F466815&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 26/04/02 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [BiliTimer](https://github.com/AntiO2/Bili-Timer) | 一个用于统计Bilibili多视频进度的TamperMonkey插件. | ![Star](https://img.shields.io/github/stars/AntiO2/Bili-Timer?&label=) | 26/03/21 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [BiliTouch](https://github.com/RevenLiu/BiliTouch) | 一个为移动端打造的Web端B站网页播放器交互重构的篡改猴脚本。支持两侧滑动调节亮度与音量、横向滑动调节时间进度、单击显隐工具栏、双击播放/暂停。让网页版拥有原生 App 般的使用体验. | ![Star](https://img.shields.io/github/stars/RevenLiu/BiliTouch?&label=) | 26/04/06 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [bilitwin](https://github.com/liqi0816/bilitwin) | 超清FLV下载，FLV合并，原生MP4下载，弹幕ASS下载，MKV打包，播放体验增强... | ![Star](https://img.shields.io/github/stars/liqi0816/bilitwin?&label=) | 26/04/02 | ![TypeScript](svg/tsnode.svg?raw=true) |
@@ -272,6 +291,7 @@
 | [B站治好了我的颈椎病](https://github.com/heyManNice/bili-cured-my-neck-pain) | 给B站PC网页版添加视频旋转和缩放功能，喜欢的话点点小星星哟😘. | ![Star](https://img.shields.io/github/stars/heyManNice/bili-cured-my-neck-pain?&label=) | 25/12/22 | ![TypeScript](svg/tsnode.svg?raw=true) |
 | [B站稍后再看功能增强](https://greasyfork.org/zh-CN/scripts/395456) | 完全自定义你的视频标题下方信息栏，排序，增加，删除！. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F395456&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 24/08/26 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [B站笔记快捷键](https://greasyfork.org/zh-CN/scripts/454784) | 极大提高笔记效率，哔哩哔哩大学必备. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F454784&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 25/02/25 | ![JavaScript](svg/javascript.svg?raw=true) |
+| [B站评论区开盒](https://greasyfork.org/zh-CN/scripts/448434) | B站评论区直接展示 ip 属地. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F448434&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 24/09/07 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*B站防剧透进度条*](https://greasyfork.org/zh-CN/scripts/411092) | 看比赛、看番总是被进度条剧透？装上这个脚本再也不用担心这些问题了. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F411092&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 22/07/06 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*b站首页黑名单*](https://greasyfork.org/zh-CN/scripts/437528) | 屏蔽b站首页推荐中的指定up. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F437528&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 22/06/23 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [ClickEase-for-Bilibili](https://github.com/uncharity/ClickEase-for-Bilibili) | 为哔哩哔哩设计的键盘操作方案. | ![Star](https://img.shields.io/github/stars/uncharity/ClickEase-for-Bilibili?&label=) | 25/01/31 | ![JavaScript](svg/javascript.svg?raw=true) |
@@ -281,6 +301,7 @@
 | [*userscript-enhance-bilibili-player*](https://github.com/fython/userscript-enhance-bilibili-player) | 增强哔哩哔哩播放器的使用体验. | ![Star](https://img.shields.io/github/stars/fython/userscript-enhance-bilibili-player?&label=) | 23/03/04 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Wider Bilibili](https://github.com/posthumz/wider-bilibili) | 哔哩哔哩宽屏体验. | ![Star](https://img.shields.io/github/stars/posthumz/wider-bilibili?&label=) | 25/09/08 | ![TypeScript](svg/tsnode.svg?raw=true) |
 | [关注管理器](https://greasyfork.org/zh-CN/scripts/428895) | 快速排序和筛选你的关注列表，一键取关不再关注的UP等. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F428895&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 25/11/23 | ![JavaScript](svg/javascript.svg?raw=true) |
+| [哔哩哔哩主页 IP 属地](https://greasyfork.org/zh-CN/scripts/534807) | 在哔哩哔哩主页显示 IP 属地。仅支持显示个人主页。为了获得完整体验，建议配合「哔哩哔哩网页版显示 IP 属地」（https://greasyfork.org/scripts/466815）使用. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F534807&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 25/05/03 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [哔哩哔哩查看原图](https://greasyfork.org/zh-CN/scripts/372289) | 方便在B站内查看各种图片的原图，支持动态、专栏. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F372289&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 25/10/18 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*哔哩哔哩深色模式*](https://greasyfork.org/zh-CN/scripts/428222) | 熬夜必备&#124;呵护眼睛&#124;沉浸体验&#124;优化布局&#124;适用于网页端&#124;深色/夜间/黑色/暗色模式. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F428222&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 22/12/24 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [哔哩哔哩番剧出差助手](https://greasyfork.org/zh-CN/scripts/429205) | 为动态页面增加显示哔哩哔哩番剧出差动态功能. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F429205&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 24/04/28 | ![JavaScript](svg/javascript.svg?raw=true) |
@@ -302,6 +323,7 @@
 | 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |
 |:--- |:--- |:--- |:--- |:--- |
 | [bili_live_average_bitrate_display](https://github.com/Raven-tu/bili_live_bitrate_ug) | 猴油脚本，用于在哔哩哔哩直播页面上显示直播流的平均码率. | ![Star](https://img.shields.io/github/stars/Raven-tu/bili_live_bitrate_ug?&label=) | 26/01/23 | ![JavaScript](svg/javascript.svg?raw=true) |
+| [Bilibili 直播间下载封面](https://greasyfork.org/zh-CN/scripts/568124) | 下载封面. | ![总安装量](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fgreasyfork.org%2Fen%2Fscripts%2F568124&search=%3Cdd%20class%3D%22script-show-total-installs%22%3E%3Cspan%3E(.%2B%3F)%3C%2Fspan%3E%3C%2Fdd%3E&replace=%241&style=social&logo=greasyfork&label=%20) | 26/03/02 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [bilibili_live-assistant](https://github.com/isma123HH/bilibili_live-assistant) | 获取直播流，获取直播封面，直播切片... | ![Star](https://img.shields.io/github/stars/isma123HH/bilibili_live-assistant?&label=) | 23/06/23 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [Bilibili-Remove-Live-Giftbar](https://github.com/OnlyCharacters/Bilibili-Remove-Live-Giftbar) | 移除b站直播间礼物条. | ![Star](https://img.shields.io/github/stars/OnlyCharacters/Bilibili-Remove-Live-Giftbar?&label=) | 23/06/14 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [bilibili-sc-record](https://github.com/ltxlong/bilibili-sc-record) | B站直播间SC记录板. | ![Star](https://img.shields.io/github/stars/ltxlong/bilibili-sc-record?&label=) | 26/03/25 | ![JavaScript](svg/javascript.svg?raw=true) |
@@ -361,7 +383,7 @@
 | [bilibili-downloader](https://github.com/tyokyo320/bilibili-downloader) | B站视频下载，支持下载大会员清晰度4K. | ![Star](https://img.shields.io/github/stars/tyokyo320/bilibili-downloader?&label=) | 26/01/17 | ![Python](svg/python.svg?raw=true) |
 | [Bilibili-downloader](https://github.com/stevenjoezhang/bilibili-downloader) | 基于 Node.js 和 Electron 开发的哔哩哔哩视频、弹幕下载器. | ![Star](https://img.shields.io/github/stars/stevenjoezhang/bilibili-downloader?&label=) | 26/04/04 | ![NodeJs](svg/nodejs.svg?raw=true) |
 | [Bilibili-downloader](https://github.com/ZhelinCheng/bilibili-downloader) | B 站个人动态视频下载助手，支持下载 B 站个人动态更新的 4k 视频. | ![Star](https://img.shields.io/github/stars/ZhelinCheng/bilibili-downloader?&label=) | 26/04/08 | ![TypeScript](svg/tsnode.svg?raw=true) |
-| [BILIBILI-DOWNLOADER-GUI](https://github.com/j4rviscmd/bilibili-downloader-gui) | Lightweight cross-platform Bilibili video downloader built with Tauri + React. | ![Star](https://img.shields.io/github/stars/j4rviscmd/bilibili-downloader-gui?&label=) | 26/03/28 | ![TypeScript](svg/tsnode.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![MacOS](svg/apple.svg?raw=true) |
+| [BILIBILI-DOWNLOADER-GUI](https://github.com/j4rviscmd/bilibili-downloader-gui) | Lightweight cross-platform Bilibili video downloader built with Tauri + React. | ![Star](https://img.shields.io/github/stars/j4rviscmd/bilibili-downloader-gui?&label=) | 26/04/10 | ![TypeScript](svg/tsnode.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![MacOS](svg/apple.svg?raw=true) |
 | [bilibili-manga-downloader](https://github.com/lanyeeee/bilibili-manga-downloader) | 哔哩哔哩漫画下载器. | ![Star](https://img.shields.io/github/stars/lanyeeee/bilibili-manga-downloader?&label=) | 25/07/22 | ![Rust](svg/rust.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
 | [BiliBili-Manga-Downloader](https://github.com/Zeal-L/BiliBili-Manga-Downloader) | 一个好用的哔哩哔哩漫画下载器. | ![Star](https://img.shields.io/github/stars/Zeal-L/BiliBili-Manga-Downloader?&label=) | 25/07/23 | ![Python](svg/python.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
 | [bilibili-manga-watermark-remover](https://github.com/lanyeeee/bilibili-manga-watermark-remover) | bilibili漫画 哔哩哔哩漫画 B漫 去水印工具，带图形界面，带下载功能，图形界面基于Tauri. | ![Star](https://img.shields.io/github/stars/lanyeeee/bilibili-manga-watermark-remover?&label=) | 25/04/21 | ![Rust](svg/rust.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
@@ -423,7 +445,6 @@
 | [bili-bot](https://github.com/orangelckc/bili-bot) | 哔哩哔哩-直播间管家机器人. | ![Star](https://img.shields.io/github/stars/orangelckc/bili-bot?&label=) | 23/12/18 | ![TypeScript](svg/tsnode.svg?raw=true) |
 | [bili-live-machine](https://github.com/phy-lei/bili-live-machine) | bilibili直播姬-弹幕姬. | ![Star](https://img.shields.io/github/stars/phy-lei/bili-live-machine?&label=) | 23/07/28 | ![TypeScript](svg/tsnode.svg?raw=true) |
 | [Bili-LiveLuckDraw](https://github.com/grtsinry43/Bili-LiveLuckDraw) | 一个 B 站直播抽奖工具，通过获取弹幕关键词进行抽奖. | ![Star](https://img.shields.io/github/stars/grtsinry43/Bili-LiveLuckDraw?&label=) | 25/05/31 | ![TypeScript](svg/tsnode.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
-| [~~bili-recorder~~](https://github.com/chocotan/bili-recorder) | 这是一个bilibili直播录制工具. | ![Star](https://img.shields.io/github/stars/chocotan/bili-recorder?&label=) | 23/01/04 | ![Java](svg/openjdk.svg?raw=true) |
 | [bili-shadowreplay](https://github.com/Xinrea/bili-shadowreplay) | bilibili 直播实时切片工具. | ![Star](https://img.shields.io/github/stars/Xinrea/bili-shadowreplay?&label=) | 26/03/16 | ![Rust](svg/rust.svg?raw=true) |
 | [Bili2.0](https://github.com/yjqiang/bili2.0) | Python3 实现的 Bilibili 直播助手. | ![Star](https://img.shields.io/github/stars/yjqiang/bili2.0?&label=) | 23/07/20 | ![Python](svg/python.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [bilibili_danmaku](https://github.com/windowsair/bilibili_danmaku) | 直播弹幕渲染工具. | ![Star](https://img.shields.io/github/stars/windowsair/bilibili_danmaku?&label=) | 26/01/11 | ![C++](svg/cplusplus.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
@@ -444,15 +465,12 @@
 | [Bilibili-Live-Record](https://github.com/chandou-code/Bilibili-Live-Record) | HTML+Flask 自动爬取up主的《直播回放》 一键实现已看、撤回、更新、多up录播等功能. | ![Star](https://img.shields.io/github/stars/chandou-code/Bilibili-Live-Record?&label=) | 24/08/10 |  |
 | [bilibili-live-recorder](https://github.com/NetherXiaoYu/bilibili-live-recorder) | B站直播间录屏，录制完成后自动打包上传到 OSS. | ![Star](https://img.shields.io/github/stars/NetherXiaoYu/bilibili-live-recorder?&label=) | 23/11/09 | ![Python](svg/python.svg?raw=true) |
 | [~~BiliBili-Live-Recorder~~](https://github.com/CNXiaozhiy/BiliBili-Live-Recorder) | 哔哩哔哩全自动直播录制器，支持对接适配器（OneBot协议的QQ机器人）. | ![Star](https://img.shields.io/github/stars/CNXiaozhiy/BiliBili-Live-Recorder?&label=) | 25/08/01 | ![TypeScript](svg/tsnode.svg?raw=true) |
-| [~~bilibili-live-stream~~](https://github.com/ikexing-cn/bilibili-live-stream) | 一个很简单的获取bilibili直播流的小工具. | ![Star](https://img.shields.io/github/stars/ikexing-cn/bilibili-live-stream?&label=) | 22/05/16 | ![Go](svg/go.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
 | [*bilibili-live-stream*](https://github.com/Beats0/bilibili-live-stream) | bilibili直播代理转发 + flv.js 拉流播放. | ![Star](https://img.shields.io/github/stars/Beats0/bilibili-live-stream?&label=) | 23/04/04 | ![JavaScript](svg/javascript.svg?raw=true) |
-| [~~Bilibili-live-tools~~](https://github.com/Dawnnnnnn/bilibili-live-tools) | python实现的哔哩哔哩直播助手. | ![Star](https://img.shields.io/github/stars/Dawnnnnnn/bilibili-live-tools?&label=) | 20/08/26 | ![Python](svg/python.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [bilibili-mac](https://github.com/yielde/bilibili-mac) | bilibili直播mac桌面小软件，手机扫码登录，获取推流码开播下播. | ![Star](https://img.shields.io/github/stars/yielde/bilibili-mac?&label=) | 25/06/07 | ![C++](svg/cplusplus.svg?raw=true) |
 | [bilibili-ordersong-plugin](https://github.com/xiaoan-1/bilibili-ordersong-plugin) | b站直播姬点歌插件. | ![Star](https://img.shields.io/github/stars/xiaoan-1/bilibili-ordersong-plugin?&label=) | 25/10/11 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [bilibili-recording-go](https://github.com/DarrenIce/bilibili-recording-go) | 哔哩哔哩录播机. | ![Star](https://img.shields.io/github/stars/DarrenIce/bilibili-recording-go?&label=) | 23/09/25 | ![Go](svg/go.svg?raw=true) |
 | [BilibiliDanMu](https://github.com/Kurris/BilibiliDanMu) | bilibili 弹幕工具. | ![Star](https://img.shields.io/github/stars/Kurris/BilibiliDanMu?&label=) | 23/10/17 | ![C#](svg/csharp.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [BilibiliDanmuRobot](https://github.com/xbclub/BilibiliDanmuRobot) | bilibili直播弹幕机器人. | ![Star](https://img.shields.io/github/stars/xbclub/BilibiliDanmuRobot?&label=) | 25/06/28 | ![Go](svg/go.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
-| [~~BiliBiliLiveAutoRec~~](https://github.com/qiaoshouzi/BiliBiliLiveAutoRec) | 自动录播脚本. | ![Star](https://img.shields.io/github/stars/qiaoshouzi/BiliBiliLiveAutoRec?&label=) | 22/04/20 | ![Python](svg/python.svg?raw=true) |
 | [BilibiliLiveMonitorDocker](https://github.com/LambdaExpression/BilibiliLiveMonitorDocker) | bilibili 直播监控统计. | ![Star](https://img.shields.io/github/stars/LambdaExpression/BilibiliLiveMonitorDocker?&label=) | 24/08/20 | ![Java](svg/openjdk.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [*BilibiliLiveNotifier_WPF*](https://github.com/ciiim/BilibiliLiveNotifier_WPF) | Bilibili直播通知小工具. | ![Star](https://img.shields.io/github/stars/ciiim/BilibiliLiveNotifier_WPF?&label=) | 23/03/02 | ![C#](svg/csharp.svg?raw=true) |
 | [BilibiliLiveRecordDownLoader](https://github.com/HMBSbige/BilibiliLiveRecordDownLoader) | 哔哩哔哩直播录制与回放下载. | ![Star](https://img.shields.io/github/stars/HMBSbige/BilibiliLiveRecordDownLoader?&label=) | 26/04/07 | ![C#](svg/csharp.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
@@ -526,10 +544,8 @@
 | 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |
 |:--- |:--- |:--- |:--- |:--- |
 | [auto-bilibili-recorder](https://github.com/valkjsaaa/auto-bilibili-recorder) | Bilibili 全自动录播上传脚本. | ![Star](https://img.shields.io/github/stars/valkjsaaa/auto-bilibili-recorder?&label=) | 26/01/23 | ![Python](svg/python.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
-| [~~Bili_upload_tool~~](https://github.com/googidaddy/bili_upload_tool) | 这是一个用 Python 写的搬运视频并上传到Bilibili(Web)的工具. | ![Star](https://img.shields.io/github/stars/googidaddy/bili_upload_tool?&label=) | 23/04/09 | ![Python](svg/python.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [bili-music-segmenter](https://github.com/lovegaoshi/bili-music-segmenter) | b站自动录播+歌切+上传脚本，支持docker部署. | ![Star](https://img.shields.io/github/stars/lovegaoshi/bili-music-segmenter?&label=) | 25/12/05 | ![Python](svg/python.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [Bili-to-Youtube](https://github.com/BlueSkyXN/Bili-to-Youtube) | 简化从哔哩哔哩视频下载到上传到Youtube的快速操作. | ![Star](https://img.shields.io/github/stars/BlueSkyXN/Bili-to-Youtube?&label=) | 25/08/10 | ![Python](svg/python.svg?raw=true) |
-| [~~Bili-trash-bin~~](https://github.com/googidaddy/bili-trash-bin) | 自动搬运工具. | ![Star](https://img.shields.io/github/stars/googidaddy/bili-trash-bin?&label=) | 22/02/27 | ![Python](svg/python.svg?raw=true) |
 | [Bilibili 自动打轴助手](https://github.com/AS042971/bili-auto-note) | 通过本工具可以将统一的时间轴自动转换到不同的录播笔记. | ![Star](https://img.shields.io/github/stars/AS042971/bili-auto-note?&label=) | 23/04/21 | ![Python](svg/python.svg?raw=true) |
 | [bilibiliVideoProcessor](https://github.com/RichardILMARE/bilibiliVideoProcessor) | 针对哔哩哔哩审核的电影资源一键处理工具（烧录字幕，分割视频，拼接尾巴）. | ![Star](https://img.shields.io/github/stars/RichardILMARE/bilibiliVideoProcessor?&label=) | 25/10/20 | ![Python](svg/python.svg?raw=true) |
 | [BiliIns](https://github.com/ZeroMi-Studio/BiliIns) | 单稿/多稿视频数据对比，可接入本地AI分析. | ![Star](https://img.shields.io/github/stars/ZeroMi-Studio/BiliIns?&label=) | 25/10/15 | ![Python](svg/python.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
@@ -572,7 +588,7 @@
 | [*bilibili_danmaku*](https://github.com/MerlynAllen/bilibili_danmaku) | 一个提供Flask-style API的Bilibili直播弹幕协议解析器. | ![Star](https://img.shields.io/github/stars/MerlynAllen/bilibili_danmaku?&label=) | 22/06/13 | ![Python](svg/python.svg?raw=true) |
 | [bilibili-api](https://github.com/xlz122/bilibili-server) | 提供B站web移动端api接口. | ![Star](https://img.shields.io/github/stars/xlz122/bilibili-server?&label=) | 24/10/28 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*Bilibili-api*](https://github.com/Vespa314/bilibili-api) | B站API收集整理及开发，测试【开发中】. | ![Star](https://img.shields.io/github/stars/Vespa314/bilibili-api?&label=) | 22/06/19 | ![Python](svg/python.svg?raw=true) |
-| [Bilibili-api](https://github.com/Nemo2011/bilibili-api) | 哔哩哔哩常用API调用。支持视频、番剧、用户、频道、音频等功能. | ![Star](https://img.shields.io/github/stars/Nemo2011/bilibili-api?&label=) | 26/03/28 | ![Python](svg/python.svg?raw=true) |
+| [Bilibili-api](https://github.com/Nemo2011/bilibili-api) | 哔哩哔哩常用API调用。支持视频、番剧、用户、频道、音频等功能. | ![Star](https://img.shields.io/github/stars/Nemo2011/bilibili-api?&label=) | 26/04/10 | ![Python](svg/python.svg?raw=true) |
 | [~~bilibili-api-ts~~](https://github.com/Nemo2011/bilibili-api-ts) | 哔哩哔哩常用API调用. | ![Star](https://img.shields.io/github/stars/Nemo2011/bilibili-api-ts?&label=) | 23/08/05 | ![TypeScript](svg/tsnode.svg?raw=true) |
 | [Bilibili-Bangumi-JS](https://github.com/hans362/Bilibili-Bangumi-JS) | 一个基于前端 + Serverless Function 的 Bilibili 追番进度展示页面. | ![Star](https://img.shields.io/github/stars/hans362/Bilibili-Bangumi-JS?&label=) | 24/01/11 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [*bilibili-bullet*](https://github.com/79W/bilibili-bullet) | bilibili 直播弹幕实时WebSocket爬取. | ![Star](https://img.shields.io/github/stars/79W/bilibili-bullet?&label=) | 22/04/24 | ![Vue](svg/vue.svg?raw=true) |
@@ -608,7 +624,6 @@
 | [olive](https://github.com/go-olive/olive) | 一个全自动直播录制直播上传工具. | ![Star](https://img.shields.io/github/stars/go-olive/olive?&label=) | 24/01/11 | ![Go](svg/go.svg?raw=true) |
 | [~~ordinaryroad-bilibili-live~~](https://github.com/OrdinaryRoad-Project/ordinaryroad-bilibili-live) | 使用Netty来连接B站直播间的弹幕信息流Websocket接口. | ![Star](https://img.shields.io/github/stars/OrdinaryRoad-Project/ordinaryroad-bilibili-live?&label=) | 24/01/13 | ![Java](svg/openjdk.svg?raw=true) |
 | [tiny-bilibili-ws](https://github.com/starknt/tiny-bilibili-ws) | Bilibili 直播 WebSocket API. | ![Star](https://img.shields.io/github/stars/starknt/tiny-bilibili-ws?&label=) | 25/05/31 | ![TypeScript](svg/tsnode.svg?raw=true) |
-| [~~Yabapi~~](https://github.com/SDLMoe/Yabapi) | Bilibili API for Kotlin. | ![Star](https://img.shields.io/github/stars/SDLMoe/Yabapi?&label=) | 23/02/11 | ![Kotlin](svg/kotlin.svg?raw=true) |
 | [zuiho_bilibili](https://github.com/zuiho1595440844/zuiho_bilibili) | 简易粉丝数播放量显示器（基于esp8266和Python）. | ![Star](https://img.shields.io/github/stars/zuiho1595440844/zuiho_bilibili?&label=) | 23/11/22 | ![C++](svg/cplusplus.svg?raw=true) ![Python](svg/python.svg?raw=true) |
 | [哔哩内核](https://github.com/Richasy/bili-kernel) | 快速轻松地将 BiliBili API 内容集成到你的应用之中. | ![Star](https://img.shields.io/github/stars/Richasy/bili-kernel?&label=) | 25/09/28 | ![C#](svg/csharp.svg?raw=true) |
 
@@ -643,7 +658,6 @@
 | [bilibili-linux](https://github.com/msojocs/bilibili-linux) | 基于哔哩哔哩官方客户端修改的Linux版本. | ![Star](https://img.shields.io/github/stars/msojocs/bilibili-linux?&label=) | 26/04/05 | ![NodeJs](svg/nodejs.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![Linux](svg/linux.svg?raw=true) |
 | [bilibili-ports](https://github.com/reekystive/bilibili-ports) | 哔哩哔哩官方客户端移植. | ![Star](https://img.shields.io/github/stars/reekystive/bilibili-ports?&label=) | - | ![TypeScript](svg/tsnode.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![Linux](svg/linux.svg?raw=true) ![MacOS](svg/apple.svg?raw=true) |
 | [bilibili-tui](https://github.com/MareDevi/bilibili-tui) | 一个基于终端用户界面（TUI）的 Bilibili 客户端，使用 Rust 构建，提供轻量级且高效的 Bilibili 浏览体验. | ![Star](https://img.shields.io/github/stars/MareDevi/bilibili-tui?&label=) | 26/04/07 | ![Rust](svg/rust.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) ![MacOS](svg/apple.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![Linux](svg/linux.svg?raw=true) |
-| [~~BilibiliHD2~~](https://github.com/duzhaokun123/BilibiliHD2) | 非官方哔哩哔哩客户端. | ![Star](https://img.shields.io/github/stars/duzhaokun123/BilibiliHD2?&label=) | 22/12/10 | ![Kotlin](svg/kotlin.svg?raw=true) ![Android](svg/android.svg?raw=true) |
 | [~~BilibiliLiveTV~~](https://github.com/MUedsa/BilibiliLiveTV) | 哔哩哔哩直播 Android TV APP. | ![Star](https://img.shields.io/github/stars/MUedsa/BilibiliLiveTV?&label=) | 24/12/03 | ![Java](svg/openjdk.svg?raw=true) ![Android](svg/android.svg?raw=true) |
 | [BiliBiliMApp](https://github.com/TouchFriend/BiliBiliMApp) | 一个通过 iOS 逆向分析 实现的 无广告版哔哩哔哩 客户端，在保留原有功能的基础上，专注于 广告移除与体验优化. | ![Star](https://img.shields.io/github/stars/TouchFriend/BiliBiliMApp?&label=) | 26/01/31 | ![C](svg/c.svg?raw=true) ![MacOS](svg/apple.svg?raw=true) |
 | [~~BilibiliTv~~](https://github.com/peacefulprogram/BilibiliTv) | B站第三方客户端. | ![Star](https://img.shields.io/github/stars/peacefulprogram/BilibiliTv?&label=) | 25/07/06 | ![Kotlin](svg/kotlin.svg?raw=true) ![Android](svg/android.svg?raw=true) |
@@ -658,7 +672,6 @@
 | [~~BiliNeo~~](https://github.com/Predidit/BiliNeo) | 又一个第三方 Bilibili 客户端，支持 Android 和 Windows. | ![Star](https://img.shields.io/github/stars/Predidit/BiliNeo?&label=) | 24/05/23 | ![Flutter](svg/flutter.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![Android](svg/android.svg?raw=true) |
 | [BiliPai ( ゜- ゜)つロ 干杯~](https://github.com/jay3-yy/BiliPai) | 第三方B站客户端，BiliBili KanPai "( ゜- ゜)つロ 干杯~"）. | ![Star](https://img.shields.io/github/stars/jay3-yy/BiliPai?&label=) | 26/04/10 | ![Kotlin](svg/kotlin.svg?raw=true) ![Android](svg/android.svg?raw=true) |
 | [BiliSpirit](https://github.com/JamesBaiJun/BiliSpirit) | WPF B站(Bilibili)工具，查看热门视频，动态，及历史记录等功能. | ![Star](https://img.shields.io/github/stars/JamesBaiJun/BiliSpirit?&label=) | 24/06/17 | ![C#](svg/csharp.svg?raw=true) ![Web](svg/edge.svg?raw=true) |
-| [~~BiliStart~~](https://github.com/BlameTwo/BiliStart) | B站第三方客户端. | ![Star](https://img.shields.io/github/stars/BlameTwo/BiliStart?&label=) | 23/02/15 | ![C#](svg/csharp.svg?raw=true) |
 | [~~BiliStart.WinUI3~~](https://github.com/BlameTwo/BiliStart.WinUI3-Preview) | BiliStart的衍生版本，为 BiliBili 网站的第三方Windows本地客户端. | ![Star](https://img.shields.io/github/stars/BlameTwo/BiliStart.WinUI3-Preview?&label=) | 24/05/29 | ![C#](svg/csharp.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
 | [BiliTV](https://github.com/sarogar559/BiliTV) | 📺 Stream on Android TV with BiliTV, a third-party client built with Flutter, featuring advanced video playback and codec support for a seamless viewing experience. | ![Star](https://img.shields.io/github/stars/sarogar559/BiliTV?&label=) | 26/04/10 | ![Dart](svg/dart.svg?raw=true) |
 | [BiliTV 📺](https://github.com/Hyper-Beast/BiliTV) | 一款基于Bilipai开发的哔哩哔哩TV版APP. | ![Star](https://img.shields.io/github/stars/Hyper-Beast/BiliTV?&label=) | 26/03/08 | ![Dart](svg/dart.svg?raw=true) |
@@ -701,7 +714,7 @@
 | [BilibiliTask_3](https://github.com/chuiba/BilibiliTask_3) | B站挂机用. | ![Star](https://img.shields.io/github/stars/chuiba/BilibiliTask_3?&label=) | 25/09/25 | ![Java](svg/openjdk.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [BiliBiliToolPro](https://github.com/RayWangQvQ/BiliBiliToolPro) | B 站（bilibili）自动任务工具，支持docker、青龙、腾讯云函数等多种部署方式. | ![Star](https://img.shields.io/github/stars/RayWangQvQ/BiliBiliToolPro?&label=) | 25/09/22 | ![C#](svg/csharp.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [*bilicoin*](https://github.com/r3inbowari/bilicoin) | B站自动投币工具 批量用户处理 Lv6经验补全 手机客户端二维码登录 支持docker. | ![Star](https://img.shields.io/github/stars/r3inbowari/bilicoin?&label=) | 22/03/23 | ![Go](svg/go.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
-| [BiliHelper-personal](https://github.com/lkeme/BiliHelper-personal) | 哔哩哔哩助手 - PHP 版. | ![Star](https://img.shields.io/github/stars/lkeme/BiliHelper-personal?&label=) | 26/04/09 | ![PHP](svg/php.svg?raw=true) |
+| [BiliHelper-personal](https://github.com/lkeme/BiliHelper-personal) | 哔哩哔哩助手 - PHP 版. | ![Star](https://img.shields.io/github/stars/lkeme/BiliHelper-personal?&label=) | 26/04/10 | ![PHP](svg/php.svg?raw=true) |
 | [BiliOutils](https://github.com/catlair/BiliOutils) | 直播心跳，漫画每日阅读积分，漫读券兑换，赛事竞猜. | ![Star](https://img.shields.io/github/stars/catlair/BiliOutils?&label=) | 24/04/21 | ![TypeScript](svg/tsnode.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [*Bilive_client*](https://github.com/bilive/bilive_client) | 基于Node.JS的哔哩哔哩账号活跃系统. | ![Star](https://img.shields.io/github/stars/bilive/bilive_client?&label=) | 21/07/23 | ![TypeScript](svg/tsnode.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [~~fansMedalHelper~~](https://github.com/XiaoMiku01/fansMedalHelper) | 每日获取B站直播间每日小心心及直播间自动打卡脚本. | ![Star](https://img.shields.io/github/stars/XiaoMiku01/fansMedalHelper?&label=) | 25/09/15 | ![Python](svg/python.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
@@ -735,7 +748,6 @@
 | [bilipy_bot](https://github.com/GEYUANwuqi/bilipy_bot) | 推送b站动态和直播的通知到QQ/QQNT的无接口/框架解决方案. | ![Star](https://img.shields.io/github/stars/GEYUANwuqi/bilipy_bot?&label=) | 26/03/15 | ![Python](svg/python.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
 | [BiliRoamingX](https://github.com/BiliRoamingX/BiliRoamingX) | 基于 ReVanced 实现的B站 Android 客户端增强模块. | ![Star](https://img.shields.io/github/stars/BiliRoamingX/BiliRoamingX?&label=) | 26/04/10 | ![Java](svg/openjdk.svg?raw=true) |
 | [*bilivedioSnap*](https://github.com/Arisuakip/bilivedioSnap) | HoshinoBot插件,把群友的哔哩哔哩小程序转成预览图. | ![Star](https://img.shields.io/github/stars/Arisuakip/bilivedioSnap?&label=) | 23/02/28 | ![Python](svg/python.svg?raw=true) |
-| [~~BotBiliBili~~](https://github.com/Coloryr/BotBiliBili) | 一个基于 ColorMirai 的B站机器人. | ![Star](https://img.shields.io/github/stars/Coloryr/BotBiliBili?&label=) | 22/09/19 | ![C#](svg/csharp.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
 | [B站评论区监控器 (增强版？)](https://github.com/wy3057/bilibili-comment) | 这是一个用于监控 Bilibili 视频评论的 Python 脚本。它可以帮助您实时追踪您关注的 Bilibili 视频下的新评论和回复。脚本支持自定义检查频率，并允许用户随时手动触发评论检查，极大地提高了使用的灵活性和便利性. | ![Star](https://img.shields.io/github/stars/wy3057/bilibili-comment?&label=) | 25/08/31 | ![Python](svg/python.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
 | [discord-bilibili-embed](https://github.com/azusemst/discord-bilibili-embed) | 功能完全的b站-discord机器人. | ![Star](https://img.shields.io/github/stars/azusemst/discord-bilibili-embed?&label=) | 23/10/28 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [HarukaBot](https://github.com/SK-415/HarukaBot) | 将 B 站的动态和直播信息推送至 QQ，基于 NoneBot2 开发. | ![Star](https://img.shields.io/github/stars/SK-415/HarukaBot?&label=) | 23/07/28 | ![Python](svg/python.svg?raw=true) |
@@ -770,7 +782,7 @@
 | [🎯 B站评论爬虫](https://github.com/Roinflam/bilibili_spider) | 基于 PyQt6 开发的 B 站评论爬虫桌面应用，支持评论批量采集、智能管理和数据分析，采用现代化暗色界面设计，提供流畅的用户体验. | ![Star](https://img.shields.io/github/stars/Roinflam/bilibili_spider?&label=) | 25/05/19 | ![Python](svg/python.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
 | [Bili_Realtime_Data](https://github.com/CzJam/Bili_Realtime_Data) | Bilibili粉丝与视频实时数据统计. | ![Star](https://img.shields.io/github/stars/CzJam/Bili_Realtime_Data?&label=) | 24/08/07 | ![PHP](svg/php.svg?raw=true) |
 | [Bili-Insights](https://github.com/dai-hongtao/Bili-Insights) | Bili-Insights 是一个用于抓取、统计并可视化 B 站 UP 主数据的轻量级工具。 特点是：本地部署、每日快照、可视化看板、支持视频数据与账号数据分析. | ![Star](https://img.shields.io/github/stars/dai-hongtao/Bili-Insights?&label=) | 25/12/31 | ![Python](svg/python.svg?raw=true) |
-| [bili2text](https://github.com/lanbinleo/bili2text) | Bilibili视频转文字，一步到位，输入链接即可使用. | ![Star](https://img.shields.io/github/stars/lanbinleo/bili2text?&label=) | 25/10/23 | ![Python](svg/python.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
+| [bili2text](https://github.com/lanbinleo/bili2text) | Bilibili视频转文字，一步到位，输入链接即可使用. | ![Star](https://img.shields.io/github/stars/lanbinleo/bili2text?&label=) | 26/04/10 | ![Python](svg/python.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
 | [BiliBili Summarize &#124; AI 视频深度分析助手](https://github.com/Xuuuuu04/BiliBiliSummary) | 一键提取 B 站视频字幕、弹幕、评论及关键帧画面，通过 AI 多模态大模型生成深度总结、思维导图及舆情分析报告. | ![Star](https://img.shields.io/github/stars/Xuuuuu04/BiliBiliSummary?&label=) | - | ![Python](svg/python.svg?raw=true) |
 | [Bilibili Watcher](https://github.com/krisxia0506/bilibili-watcher) | Bilibili Watcher 是一个开源的 Bilibili 视频观看时长追踪与分析工具. | ![Star](https://img.shields.io/github/stars/krisxia0506/bilibili-watcher?&label=) | 25/05/13 | ![Go](svg/go.svg?raw=true) ![NodeJs](svg/nodejs.svg?raw=true) ![Docker](svg/docker.svg?raw=true) ![Cli](svg/terminal.svg?raw=true) |
 | [*bilibili_Data_Analysis-Clout_Prediction*](https://github.com/RubyRose-TAT/bilibili_Data_Analysis-Clout_Prediction) | B站视频热度预测与分析. | ![Star](https://img.shields.io/github/stars/RubyRose-TAT/bilibili_Data_Analysis-Clout_Prediction?&label=) | 22/05/06 | ![Python](svg/python.svg?raw=true) |
@@ -895,8 +907,7 @@
 | [bilibili-comment2png](https://github.com/circle-hotaru/bilibili-comment2png) | Bilibili 评论转图片神器. | ![Star](https://img.shields.io/github/stars/circle-hotaru/bilibili-comment2png?&label=) | 24/06/05 | ![Vue](svg/vue.svg?raw=true) |
 | [bilibili-danmaku-regex](https://github.com/Mark9804/bilibili-danmaku-regex) | 结合pakku.js使用的自用B站弹幕屏蔽正则. | ![Star](https://img.shields.io/github/stars/Mark9804/bilibili-danmaku-regex?&label=) | 24/06/27 |  |
 | [bilibili-danmu-block-list](https://github.com/Snoopy1866/bilibili-danmu-block-list) | 哔哩哔哩弹幕屏蔽规则列表. | ![Star](https://img.shields.io/github/stars/Snoopy1866/bilibili-danmu-block-list?&label=) | 26/04/09 | ![Python](svg/python.svg?raw=true) |
-| [bilibili-emotes](https://github.com/ccmuyuu/bilibili-emotes) | bilibili已发布的表情包. | ![Star](https://img.shields.io/github/stars/ccmuyuu/bilibili-emotes?&label=) | 26/04/09 |  |
-| [~~BiliBili-favorites-list-saver~~](https://github.com/Moemu/BiliBili-favorites-list-saver) | B站收藏夹列表保存程序. | ![Star](https://img.shields.io/github/stars/Moemu/BiliBili-favorites-list-saver?&label=) | 22/07/12 | ![Python](svg/python.svg?raw=true) |
+| [bilibili-emotes](https://github.com/ccmuyuu/bilibili-emotes) | bilibili已发布的表情包. | ![Star](https://img.shields.io/github/stars/ccmuyuu/bilibili-emotes?&label=) | 26/04/10 |  |
 | [*bilibili-lottery*](https://github.com/flamego-examples/bilibili-lottery) | 一款支持对哔哩哔哩视频或动态评论进行抽奖的小程序. | ![Star](https://img.shields.io/github/stars/flamego-examples/bilibili-lottery?&label=) | 23/03/15 | ![Go](svg/go.svg?raw=true) ![TypeScript](svg/tsnode.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
 | [bilibili-lucky](https://github.com/wojiangkuanglong/bilibili-lucky) | B站抽奖脚本. | ![Star](https://img.shields.io/github/stars/wojiangkuanglong/bilibili-lucky?&label=) | 24/10/03 | ![JavaScript](svg/javascript.svg?raw=true) |
 | [BiliBili-Lucky-Draw](https://github.com/rongchenlin/BiliBili-Lucky-Draw) | B站抽奖转发——薅羊毛脚本. | ![Star](https://img.shields.io/github/stars/rongchenlin/BiliBili-Lucky-Draw?&label=) | 24/02/22 | ![Python](svg/python.svg?raw=true) |
@@ -918,7 +929,6 @@
 | [BiliCLOnline](https://github.com/InJeCTrL/BiliCLOnline) | Bilibili评论区第三方抽奖工具. | ![Star](https://img.shields.io/github/stars/InJeCTrL/BiliCLOnline?&label=) | 25/02/19 | ![C#](svg/csharp.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [BiliEmoji](https://github.com/lrhtony/BiliEmoji) | B站全表情收集，含付费表情. | ![Star](https://img.shields.io/github/stars/lrhtony/BiliEmoji?&label=) | 23/07/09 |  |
 | [BiliHardcore_AI](https://github.com/ZyphrZero/bilihardcore_ai) | B 站硬核会员试炼 AI 自动答题跨平台应用，支持 MacOS/Windows/Linux. | ![Star](https://img.shields.io/github/stars/ZyphrZero/bilihardcore_ai?&label=) | 25/06/05 | ![Python](svg/python.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
-| [~~BiliLottery~~](https://github.com/cicidoll/BiliLottery) | B站动态评论抽奖脚本. | ![Star](https://img.shields.io/github/stars/cicidoll/BiliLottery?&label=) | 23/01/09 | ![Python](svg/python.svg?raw=true) |
 | [BiliMessengerElectron](https://github.com/Xinrea/BiliMessengerElectron) | Bilibili 舰长私信群发助手. | ![Star](https://img.shields.io/github/stars/Xinrea/BiliMessengerElectron?&label=) | 25/08/09 | ![Vue](svg/vue.svg?raw=true) |
 | [bilimini](https://github.com/chitosai/bilimini) | 藏起来！哔哩哔哩. | ![Star](https://img.shields.io/github/stars/chitosai/bilimini?&label=) | 23/05/28 | ![NodeJs](svg/nodejs.svg?raw=true) ![Windows](svg/windows.svg?raw=true) |
 | [Bilink](https://github.com/Kaguya233qwq/Bilink) | 原生的哔哩哔哩 消息自动回复工具/bot开发框架. | ![Star](https://img.shields.io/github/stars/Kaguya233qwq/Bilink?&label=) | 25/06/17 | ![Python](svg/python.svg?raw=true) |
@@ -941,10 +951,9 @@
 | [LotteryAutoScript](https://github.com/shanmiteko/LotteryAutoScript) | Bilibili动态抽奖助手. | ![Star](https://img.shields.io/github/stars/shanmiteko/LotteryAutoScript?&label=) | 26/02/24 | ![NodeJs](svg/nodejs.svg?raw=true) ![Windows](svg/windows.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [*puppeteer-bilibili-up-dynamic*](https://github.com/uyoungco/puppeteer-bilibili-up-dynamic) | bilibili UP主动态截图工具. | ![Star](https://img.shields.io/github/stars/uyoungco/puppeteer-bilibili-up-dynamic?&label=) | 22/06/15 | ![JavaScript](svg/javascript.svg?raw=true) ![Docker](svg/docker.svg?raw=true) |
 | [qtmdBili](https://github.com/xvhuan/qtmdBili) | 收集哔哩哔哩中的各种营销号，然后一键拉黑. | ![Star](https://img.shields.io/github/stars/xvhuan/qtmdBili?&label=) | 24/04/12 | ![JavaScript](svg/javascript.svg?raw=true) |
-| [~~Tool-Asoul-Music~~](https://github.com/sudoskys/Tool-Asoul-Music) | 哔哩哔哩收藏夹提取音频推送到TG频道且支持自动搜索筛选推送. | ![Star](https://img.shields.io/github/stars/sudoskys/Tool-Asoul-Music?&label=) | 23/02/13 | ![Python](svg/python.svg?raw=true) |
 
 </details>
 
 ## 贡献
 
-请查看[贡献指南](https://github.com/kaixinol/awesome-bilibili-extra/blob/master/CONTRIBUTING.md).
+请查看[贡献指南](CONTRIBUTING.md).
