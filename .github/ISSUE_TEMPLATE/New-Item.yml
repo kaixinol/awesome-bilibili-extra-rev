@@ -70,7 +70,7 @@ body:
       label: 主要语言
       description: 请选择主要使用的编程语言/框架
       options:
-        - None
+        - 未知 / 其他
         - Python
         - Vue
         - TypeScript
