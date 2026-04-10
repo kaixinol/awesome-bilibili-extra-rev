@@ -1,15 +1,3 @@
-- name: picgo-plugin-bilibili
-  link: xlzy520/picgo-plugin-bilibili
-  from: github
-  description: 为 PicGo 开发的一款插件，新增了B站图床
-  icon:
-    - js
-- name: typora-plugin-bilibili
-  link: xlzy520/typora-plugin-bilibili
-  from: github
-  description: Typora粘贴图片自动上传到Bilibili图床
-  icon:
-    - go
 - name: hexo-bilibili-bangumi
   link: HCLonely/hexo-bilibili-bangumi
   from: github

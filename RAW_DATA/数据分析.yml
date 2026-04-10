@@ -298,13 +298,6 @@
   description: B站评论区爬虫工具 - 支持爬取视频、动态、文章等评论，具有现代化GUI界面
   icon:
     - py
-- name: Bilibili AI Summary
-  link: fan3838abd/BilibiliAISummary
-  from: github
-  description: 让AI帮你快速总结B站视频
-  icon:
-    - py
-    - cli
 - name: BiliBili Summarize | AI 视频深度分析助手
   link: Xuuuuu04/BiliBiliSummary
   from: github

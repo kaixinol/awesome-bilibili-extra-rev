@@ -77,12 +77,6 @@
   description: B站未读消息提示器
   icon:
     - py
-- name: bili-short-url
-  link: xlzy520/bili-short-url
-  from: github
-  description: 哔哩哔哩短链生成器，将B站站内链接转化为Bilibili短链
-  icon:
-    - js
 - name: BilibiliTranscoding
   link: givemefivw/BilibiliTranscoding
   from: github
@@ -330,14 +324,6 @@
     - py
     - exe
     - docker
-- name: bilibili-comment-cleaning
-  link: Initsnow/bilibili-comment-cleaning
-  from: github
-  description: BiliBili 删除历史评论
-  icon:
-    - rust
-    - exe
-    - cli
 - name: Bili_Ticket_Monitor
   link: TaiMiao/Bili_Ticket_Monitor
   from: github
