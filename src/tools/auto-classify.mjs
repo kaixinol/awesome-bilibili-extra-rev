@@ -17,10 +17,9 @@ const ajv = new Ajv({ allErrors: true });
 const classifyItemSchema = {
   type: 'object',
   properties: {
-    url: { type: 'string' },
     related: { type: 'boolean' },
   },
-  required: ['url', 'related'],
+  required: ['related'],
   allOf: [
     {
       if: { properties: { related: { const: true } } },
@@ -162,8 +161,8 @@ export const classifyWithLLM = async (items) => {
   篡改猴脚本/全站脚本, 篡改猴脚本/主站脚本, 篡改猴脚本/直播脚本
   下载工具, 直播相关工具, UP_工具, 开发, 第三方客户端
   每日任务, 监听与推送, 数据分析, 相关插件, 其他
-- name: 项目名称（使用提供的 name 字段，或从信息推断）
-- description: 简要描述（中文，基于提供的信息）
+- name: 项目名称
+- description: 简要描述（中文）
 - icon: 技术栈标签数组，可选值：python, nodejs, typescript, javascript, rust, go, java, docker, cli, shell, vue, kotlin, swift, flutter, csharp, cplusplus, php, dart
 
 如果不是 Bilibili 相关，返回 related: false 即可。
@@ -311,7 +310,13 @@ const main = async () => {
   console.log('');
 
   console.log('Classifying with LLM...');
-  const result = await classifyWithLLM(items);
+  const classification = await classifyWithLLM(items);
+
+  // Merge LLM results back with original items (to preserve url)
+  const result = items.map((item, i) => ({
+    ...item,
+    ...classification[i],
+  }));
 
   console.log('\nApplying to YAML...');
   const added = applyToYaml(result);
