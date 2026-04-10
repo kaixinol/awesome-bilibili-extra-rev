@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Awesome Bilibili Extra Settings Filter
-// @namespace    awesome-bilibili-extra
+// @namespace    awesome-bilibili-extra-rev
 // @version      0.3
 // @description  根据样式（斜体/删除线）过滤项目列表
 // @author       Kaesinol

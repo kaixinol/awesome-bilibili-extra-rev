@@ -1,4 +1,4 @@
-# Awesome Bilibili Extra [![Awesome](https://awesome.re/badge.svg)](https://github.com/kaixinol/awesome-bilibili-extra)
+# Awesome Bilibili Extra [![Awesome](https://awesome.re/badge.svg)](https://github.com/kaixinol/awesome-bilibili-extra-rev)
 
 > 收集一些让我们在使用B站时更加方便的浏览器扩展/脚本/程序.
 >

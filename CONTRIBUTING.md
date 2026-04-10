@@ -7,7 +7,7 @@
 ### 目录结构
 
 ```
-awesome-bilibili-extra/
+awesome-bilibili-extra-rev/
 ├── RAW_DATA/                    # 项目数据源（YAML 文件，按类别组织）
 │   ├── 浏览器扩展/              #   浏览器扩展分类
 │   ├── 篡改猴脚本/              #   油猴脚本分类

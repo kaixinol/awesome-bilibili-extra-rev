@@ -11,7 +11,7 @@ const DEFAULT_CONCURRENCY = 10;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_RETRIES = 3;
 const NULL_DEVICE = process.platform === 'win32' ? 'NUL' : '/dev/null';
-const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 (+https://github.com/kaixinol/awesome-bilibili-extra)';
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 (+https://github.com/kaixinol/awesome-bilibili-extra-rev)';
 const PROGRESS_INTERVAL = 100;
 
 // Build curl args with proxy support

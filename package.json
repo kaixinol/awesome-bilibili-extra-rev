@@ -1,5 +1,5 @@
 {
-  "name": "awesome-bilibili-extra",
+  "name": "awesome-bilibili-extra-rev",
   "version": "1.1.0",
   "description": "> 收集一些让我们在浏览B站时更加方便的浏览器扩展/脚本.",
   "type": "module",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaixinol/awesome-bilibili-extra.git"
+    "url": "git+https://github.com/kaixinol/awesome-bilibili-extra-rev.git"
   },
   "author": "HCLonely",
   "contributors": [
@@ -22,9 +22,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kaixinol/awesome-bilibili-extra/issues"
+    "url": "https://github.com/kaixinol/awesome-bilibili-extra-rev/issues"
   },
-  "homepage": "https://github.com/kaixinol/awesome-bilibili-extra#readme",
+  "homepage": "https://github.com/kaixinol/awesome-bilibili-extra-rev#readme",
   "devDependencies": {
     "ajv": "^8.18.0",
     "axios": "^1.14.0",
