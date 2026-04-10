@@ -5,19 +5,6 @@
   icon:
     - rust
     - cli
-- name: Bili_upload_tool
-  link: googidaddy/bili_upload_tool
-  from: github
-  description: 这是一个用 Python 写的搬运视频并上传到Bilibili(Web)的工具
-  icon:
-    - py
-    - docker
-- name: Bili-trash-bin
-  link: googidaddy/bili-trash-bin
-  from: github
-  description: 自动搬运工具
-  icon:
-    - py
 - name: Bilibili 自动打轴助手
   link: AS042971/bili-auto-note
   from: github

@@ -72,13 +72,6 @@
   description: nonebot2的提取B站视频封面插件
   icon:
     - py
-- name: BotBiliBili
-  link: Coloryr/BotBiliBili
-  from: github
-  description: 一个基于 ColorMirai 的B站机器人
-  icon:
-    - c#
-    - exe
 - name: bili-notice-hoshino
   link: kushidou/bili-notice-hoshino
   from: github
