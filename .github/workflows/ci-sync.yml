@@ -1,8 +1,6 @@
 name: CI Sync
 
 on:
-  schedule:
-    - cron: '0 0 1 * *'
   workflow_dispatch:
     inputs:
       AUTO_PR:
@@ -13,25 +11,12 @@ on:
         options:
           - 'true'
           - 'false'
-  pull_request_target:
-    types: [closed]
 
 jobs:
   sync:
-    if: github.event_name != 'pull_request_target' || (github.event.pull_request.merged == true && github.event.pull_request.user.login == 'github-actions[bot]')
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clean up merged branch
-        if: github.event_name == 'pull_request_target'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
-          echo "🧹 删除已合并分支: $BRANCH"
-          gh api -X DELETE repos/${{ github.repository }}/git/refs/heads/$BRANCH || echo "分支已删除或不存在"
-          exit 0
-
       - name: Checkout
         uses: actions/checkout@v6
         with:
