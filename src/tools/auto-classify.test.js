@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest';
-import { extractLinks, classifyWithLLM } from './auto-classify.mjs';
+import { extractLinks, classifyWithLLM, selectDescription } from './auto-classify.mjs';
 
 describe('auto-classify tool', () => {
   describe('link extraction', () => {
@@ -159,6 +159,58 @@ https://github.com/user/repo
       expect(result).toHaveLength(2);
       expect(result[0].category).toBe('开发');
       expect(result[1].related).toBe(false);
+    });
+  });
+
+  describe('selectDescription', () => {
+    it('uses LLM description when API description is empty', () => {
+      expect(selectDescription('', 'LLM desc')).toBe('LLM desc');
+      expect(selectDescription(null, 'LLM desc')).toBe('LLM desc');
+      expect(selectDescription(undefined, 'LLM desc')).toBe('LLM desc');
+    });
+
+    it('returns empty string when both descriptions are empty', () => {
+      expect(selectDescription('', '')).toBe('');
+      expect(selectDescription(null, null)).toBe('');
+      expect(selectDescription(null, '')).toBe('');
+    });
+
+    it('uses API description when it is short and has no emojis', () => {
+      const apiDesc = '一个哔哩哔哩视频下载工具';
+      expect(selectDescription(apiDesc, 'LLM desc')).toBe(apiDesc);
+    });
+
+    it('uses LLM description when API description is too long (>70 chars)', () => {
+      const longDesc = 'A'.repeat(71);
+      expect(longDesc.length).toBeGreaterThan(70);
+      expect(selectDescription(longDesc, 'Short LLM desc')).toBe('Short LLM desc');
+    });
+
+    it('uses API description when it is too long but LLM description is empty', () => {
+      const longDesc = 'A'.repeat(71);
+      expect(selectDescription(longDesc, '')).toBe(longDesc);
+    });
+
+    it('uses LLM description when API description has high emoji ratio (>10%)', () => {
+      const emojiDesc = '🎉🎊🎈 一个工具';
+      expect(selectDescription(emojiDesc, 'Normal LLM desc')).toBe('Normal LLM desc');
+    });
+
+    it('uses API description when emoji ratio is low (<=10%)', () => {
+      const lowEmojiDesc = '一个正常的描述，带有一个emoji🎉';
+      const ratio = 1 / lowEmojiDesc.length;
+      expect(ratio).toBeLessThanOrEqual(0.1);
+      expect(selectDescription(lowEmojiDesc, 'LLM desc')).toBe(lowEmojiDesc);
+    });
+
+    it('uses API description when it has emojis but ratio is acceptable', () => {
+      const desc = 'B站视频下载工具🎬';
+      expect(selectDescription(desc, 'LLM desc')).toBe(desc);
+    });
+
+    it('handles emoji-only API description', () => {
+      const emojiOnlyDesc = '🎉🎊🎈🎁';
+      expect(selectDescription(emojiOnlyDesc, 'Real desc')).toBe('Real desc');
     });
   });
 });

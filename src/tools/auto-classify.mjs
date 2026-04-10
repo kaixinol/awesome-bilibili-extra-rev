@@ -14,6 +14,36 @@ const RAW_DATA = 'RAW_DATA';
 
 const ajv = new Ajv({ allErrors: true });
 
+// Emoji regex pattern matching most common emoji unicode ranges
+const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}]/gu;
+
+/**
+ * Select the best description based on API and LLM results.
+ * Prefers API description unless it has too many emojis (>10%) or is too long (>70 chars).
+ * @param {string|null} apiDesc - Description from API
+ * @param {string|null} llmDesc - Description from LLM
+ * @returns {string} Selected description
+ */
+export const selectDescription = (apiDesc, llmDesc) => {
+  if (!apiDesc || apiDesc.trim().length === 0) {
+    return llmDesc || '';
+  }
+
+  const emojiMatches = apiDesc.match(EMOJI_REGEX);
+  const emojiCount = emojiMatches ? emojiMatches.length : 0;
+  const emojiRatio = emojiCount / apiDesc.length;
+
+  if (emojiRatio > 0.1) {
+    return llmDesc || apiDesc;
+  }
+
+  if (apiDesc.length > 70) {
+    return llmDesc || apiDesc;
+  }
+
+  return apiDesc;
+};
+
 const classifyItemSchema = {
   type: 'object',
   properties: {
@@ -313,10 +343,19 @@ const main = async () => {
   const classification = await classifyWithLLM(items);
 
   // Merge LLM results back with original items (to preserve url)
-  const result = items.map((item, i) => ({
-    ...item,
-    ...classification[i],
-  }));
+  // Also select the best description based on API and LLM results
+  const result = items.map((item, i) => {
+    const llmResult = classification[i] || {};
+    const apiDesc = item.description || '';
+    const llmDesc = llmResult.description || '';
+    const selectedDesc = selectDescription(apiDesc, llmDesc);
+
+    return {
+      ...item,
+      ...llmResult,
+      description: selectedDesc,
+    };
+  });
 
   console.log('\nApplying to YAML...');
   const added = applyToYaml(result);
