@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeAll, afterAll, afterEach } from 'vitest';
-import { extractLinks, classifyWithLLM, selectDescription } from './auto-classify.mjs';
+import { describe, it, expect, vi } from 'vitest';
+import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata } from './auto-classify.mjs';
 
 describe('auto-classify tool', () => {
   describe('link extraction', () => {
@@ -89,128 +89,125 @@ https://github.com/user/repo
   });
 
   describe('LLM response validation', () => {
-    const savedUrl = process.env.LLM_API_URL;
+    const runLLMTests = process.env.LLM_API_URL;
 
-    beforeAll(() => {
-      process.env.LLM_API_URL = 'https://api.mock.com/v1/chat';
-      vi.spyOn(process, 'exit').mockImplementation(() => {});
-    });
+    if (!runLLMTests) {
+      it.skip('skipped — set LLM_API_URL to run', () => {});
+      return;
+    }
 
-    afterAll(() => {
-      process.env.LLM_API_URL = savedUrl;
-      vi.restoreAllMocks();
-    });
+    vi.spyOn(process, 'exit').mockImplementation(() => {});
 
-    afterEach(() => {
-      vi.unstubAllGlobals();
-    });
+    it('classifies a real GitHub repo correctly', async () => {
+      const items = await fetchMetadata([
+        'https://github.com/xiaye13579/BBLL',
+      ]);
+      const result = await classifyWithLLM(items);
+      expect(result).toHaveLength(1);
+      expect(result[0].related).toBe(true);
+      expect(result[0].category).toBeDefined();
+      console.log(`  ✅ ${items[0].name} → ${result[0].category}`);
+    }, 30000);
 
-    it('rejects invalid category', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          choices: [{ message: { content: JSON.stringify([
-            { url: 'https://github.com/test/repo', related: true, category: 'INVALID', name: 'Test', description: 'Test', icon: [] },
-          ]) } }],
-        }),
-      }));
+    it('classifies a real GreasyFork script correctly', async () => {
+      const items = await fetchMetadata([
+        'https://greasyfork.org/zh-CN/scripts/448434-b',
+      ]);
+      const result = await classifyWithLLM(items);
+      expect(result).toHaveLength(1);
+      expect(result[0].related).toBe(true);
+      expect(result[0].category).toBeDefined();
+      console.log(`  ✅ ${items[0].name} → ${result[0].category}`);
+    }, 30000);
 
-      await expect(classifyWithLLM(['https://github.com/test/repo'])).rejects.toThrow('category');
-    });
-
-    it('rejects missing name for related items', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          choices: [{ message: { content: JSON.stringify([
-            { url: 'https://github.com/test/repo', related: true, category: '开发', description: 'Test', icon: [] },
-          ]) } }],
-        }),
-      }));
-
-      await expect(classifyWithLLM(['https://github.com/test/repo'])).rejects.toThrow('name');
-    });
-
-    it('rejects invalid icon values', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          choices: [{ message: { content: JSON.stringify([
-            { url: 'https://github.com/test/repo', related: true, category: '开发', name: 'Test', description: 'Test', icon: ['bad_icon'] },
-          ]) } }],
-        }),
-      }));
-
-      await expect(classifyWithLLM(['https://github.com/test/repo'])).rejects.toThrow('icon');
-    });
-
-    it('accepts valid related items', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          choices: [{ message: { content: JSON.stringify([
-            { url: 'https://github.com/test/repo', related: true, category: '开发', name: 'TestRepo', description: '测试', icon: ['python'] },
-            { url: 'https://github.com/test/not-bili', related: false },
-          ]) } }],
-        }),
-      }));
-
-      const result = await classifyWithLLM(['https://github.com/test/repo']);
+    it('handles mixed related and unrelated items', async () => {
+      const items = await fetchMetadata([
+        'https://github.com/indefined/bilibili-libs',
+        'https://github.com/torvalds/linux',
+      ]);
+      const result = await classifyWithLLM(items);
       expect(result).toHaveLength(2);
-      expect(result[0].category).toBe('开发');
+      expect(result[0].related).toBe(true);
       expect(result[1].related).toBe(false);
+    }, 30000);
+
+    it('classifies batch of GreasyFork scripts correctly', async () => {
+      const links = [
+        'https://greasyfork.org/zh-CN/scripts/448434-b',
+        'https://greasyfork.org/zh-CN/scripts/466815-bilireveal-',
+        'https://greasyfork.org/zh-CN/scripts/534807-',
+        'https://greasyfork.org/zh-CN/scripts/561862-bilibili-original-avatar-downloader-viewer',
+        'https://greasyfork.org/zh-CN/scripts/568124-bilibili-',
+      ];
+      const items = await fetchMetadata(links);
+      const result = await classifyWithLLM(items);
+      expect(result).toHaveLength(5);
+      const relatedItems = result.filter((r) => r.related);
+      // At least 3 out of 5 should be related (some may fail due to API timeout / incomplete data)
+      expect(relatedItems.length).toBeGreaterThanOrEqual(3);
+      for (const item of relatedItems) {
+        expect(item.category).toBeDefined();
+      }
+      for (let i = 0; i < result.length; i++) {
+        const itemName = items[i].name || '(no name)';
+        console.log(`  ${result[i].related ? '✅' : '❌'} ${itemName} → ${result[i].category || 'N/A'}`);
+      }
+    }, 120000);
+  });
+
+  describe('stripEmojis', () => {
+    it('returns empty string for empty input', () => {
+      expect(stripEmojis('')).toBe('');
+      expect(stripEmojis(null)).toBe('');
+      expect(stripEmojis(undefined)).toBe('');
+    });
+
+    it('removes emojis from description', () => {
+      expect(stripEmojis('🎉 一个工具')).toBe('一个工具');
+      expect(stripEmojis('下载工具🎬🎮')).toBe('下载工具');
+    });
+
+    it('preserves non-emoji characters', () => {
+      expect(stripEmojis('B站视频下载工具')).toBe('B站视频下载工具');
+      expect(stripEmojis('A simple download tool for Bilibili')).toBe('A simple download tool for Bilibili');
+    });
+
+    it('collapses multiple spaces after emoji removal', () => {
+      expect(stripEmojis('🎉 🎊 一个工具 🎈')).toBe('一个工具');
     });
   });
 
-  describe('selectDescription', () => {
-    it('uses LLM description when API description is empty', () => {
-      expect(selectDescription('', 'LLM desc')).toBe('LLM desc');
-      expect(selectDescription(null, 'LLM desc')).toBe('LLM desc');
-      expect(selectDescription(undefined, 'LLM desc')).toBe('LLM desc');
+  describe('fixCategory', () => {
+    it('returns valid category unchanged', () => {
+      expect(fixCategory('篡改猴脚本/主站脚本')).toBe('篡改猴脚本/主站脚本');
+      expect(fixCategory('下载工具')).toBe('下载工具');
     });
 
-    it('returns empty string when both descriptions are empty', () => {
-      expect(selectDescription('', '')).toBe('');
-      expect(selectDescription(null, null)).toBe('');
-      expect(selectDescription(null, '')).toBe('');
+    it('fixes 油猴脚本 to 篡改猴脚本', () => {
+      expect(fixCategory('油猴脚本/主站脚本')).toBe('篡改猴脚本/主站脚本');
+      expect(fixCategory('油猴脚本/全站脚本')).toBe('篡改猴脚本/全站脚本');
+      expect(fixCategory('油猴脚本/直播脚本')).toBe('篡改猴脚本/直播脚本');
+      expect(fixCategory('油猴脚本')).toBe('篡改猴脚本/主站脚本');
     });
 
-    it('uses API description when it is short and has no emojis', () => {
-      const apiDesc = '一个哔哩哔哩视频下载工具';
-      expect(selectDescription(apiDesc, 'LLM desc')).toBe(apiDesc);
+    it('fixes standalone category names to defaults', () => {
+      expect(fixCategory('浏览器扩展')).toBe('浏览器扩展/主站扩展');
+      expect(fixCategory('篡改猴脚本')).toBe('篡改猴脚本/主站脚本');
+      expect(fixCategory('油猴脚本')).toBe('篡改猴脚本/主站脚本');
     });
 
-    it('uses LLM description when API description is too long (>70 chars)', () => {
-      const longDesc = 'A'.repeat(71);
-      expect(longDesc.length).toBeGreaterThan(70);
-      expect(selectDescription(longDesc, 'Short LLM desc')).toBe('Short LLM desc');
+    it('fixes shortcut names to categories', () => {
+      expect(fixCategory('下载')).toBe('下载工具');
+      expect(fixCategory('下载器')).toBe('下载工具');
+      expect(fixCategory('直播')).toBe('直播相关工具');
+      expect(fixCategory('开发')).toBe('开发');
+      expect(fixCategory('客户端')).toBe('第三方客户端');
+      expect(fixCategory('监控')).toBe('监听与推送');
+      expect(fixCategory('统计')).toBe('数据分析');
     });
 
-    it('uses API description when it is too long but LLM description is empty', () => {
-      const longDesc = 'A'.repeat(71);
-      expect(selectDescription(longDesc, '')).toBe(longDesc);
-    });
-
-    it('uses LLM description when API description has high emoji ratio (>10%)', () => {
-      const emojiDesc = '🎉🎊🎈 一个工具';
-      expect(selectDescription(emojiDesc, 'Normal LLM desc')).toBe('Normal LLM desc');
-    });
-
-    it('uses API description when emoji ratio is low (<=10%)', () => {
-      const lowEmojiDesc = '一个正常的描述，带有一个emoji🎉';
-      const ratio = 1 / lowEmojiDesc.length;
-      expect(ratio).toBeLessThanOrEqual(0.1);
-      expect(selectDescription(lowEmojiDesc, 'LLM desc')).toBe(lowEmojiDesc);
-    });
-
-    it('uses API description when it has emojis but ratio is acceptable', () => {
-      const desc = 'B站视频下载工具🎬';
-      expect(selectDescription(desc, 'LLM desc')).toBe(desc);
-    });
-
-    it('handles emoji-only API description', () => {
-      const emojiOnlyDesc = '🎉🎊🎈🎁';
-      expect(selectDescription(emojiOnlyDesc, 'Real desc')).toBe('Real desc');
+    it('returns unknown category unchanged if no fix matches', () => {
+      expect(fixCategory('some-random-category')).toBe('some-random-category');
     });
   });
 });

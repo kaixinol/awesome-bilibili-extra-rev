@@ -5,10 +5,14 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFile as execFileCb } from 'node:child_process';
+import { promisify } from 'node:util';
 import { parse, stringify } from 'yaml';
 import { loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
 
 import Ajv from 'ajv';
+
+const execFile = promisify(execFileCb);
 
 const RAW_DATA = 'RAW_DATA';
 
@@ -18,30 +22,62 @@ const ajv = new Ajv({ allErrors: true });
 const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}]/gu;
 
 /**
- * Select the best description based on API and LLM results.
- * Prefers API description unless it has too many emojis (>10%) or is too long (>70 chars).
- * @param {string|null} apiDesc - Description from API
- * @param {string|null} llmDesc - Description from LLM
- * @returns {string} Selected description
+ * Strip emojis from a description string, preserving all other characters.
+ * @param {string} text - Raw description
+ * @returns {string} Cleaned description
  */
-export const selectDescription = (apiDesc, llmDesc) => {
-  if (!apiDesc || apiDesc.trim().length === 0) {
-    return llmDesc || '';
+export const stripEmojis = (text) => {
+  if (!text) return '';
+  return text.replace(EMOJI_REGEX, '').replace(/\s+/g, ' ').trim();
+};
+
+const VALID_CATEGORIES = [
+  '浏览器扩展/全站扩展', '浏览器扩展/主站扩展', '浏览器扩展/直播扩展',
+  '篡改猴脚本/全站脚本', '篡改猴脚本/主站脚本', '篡改猴脚本/直播脚本',
+  '下载工具', '直播相关工具', 'UP_工具', '开发', '第三方客户端',
+  '每日任务', '监听与推送', '数据分析', '相关插件', '其他',
+];
+
+/**
+ * Auto-fix common category name variations from LLM output.
+ * @param {string} category - The category string from LLM
+ * @returns {string} Fixed category or original if no match
+ */
+export const fixCategory = (category) => {
+  if (VALID_CATEGORIES.includes(category)) return category;
+
+  const fixes = [
+    // 油猴 → 篡改猴 (common LLM variation)
+    [/油猴脚本\/全站脚本/, '篡改猴脚本/全站脚本'],
+    [/油猴脚本\/主站脚本/, '篡改猴脚本/主站脚本'],
+    [/油猴脚本\/直播脚本/, '篡改猴脚本/直播脚本'],
+    [/油猴脚本/, '篡改猴脚本/主站脚本'],
+
+    // Tampermonkey → 篡改猴脚本
+    [/tampermonkey/i, '篡改猴脚本/主站脚本'],
+
+    // Missing sub-category (e.g., just "浏览器扩展" → default to 主站)
+    [/^浏览器扩展$/, '浏览器扩展/主站扩展'],
+    [/^篡改猴脚本$/, '篡改猴脚本/主站脚本'],
+    [/^油猴脚本$/, '篡改猴脚本/主站脚本'],
+
+    // Shortcuts / aliases
+    [/^(下载|下载器|bili下载)/, '下载工具'],
+    [/^(直播工具|直播)/, '直播相关工具'],
+    [/^(UP|up主|UP主|创作)/, 'UP_工具'],
+    [/^(API|SDK|开发工具|开发)/, '开发'],
+    [/^(第三方|客户端|客户端)/, '第三方客户端'],
+    [/^(每日任务|日常任务|日常)/, '每日任务'],
+    [/^(监听|推送|监控)/, '监听与推送'],
+    [/^(数据分析|统计)/, '数据分析'],
+    [/^(相关插件|插件)/, '相关插件'],
+  ];
+
+  for (const [pattern, replacement] of fixes) {
+    if (pattern.test(category)) return replacement;
   }
 
-  const emojiMatches = apiDesc.match(EMOJI_REGEX);
-  const emojiCount = emojiMatches ? emojiMatches.length : 0;
-  const emojiRatio = emojiCount / apiDesc.length;
-
-  if (emojiRatio > 0.1) {
-    return llmDesc || apiDesc;
-  }
-
-  if (apiDesc.length > 70) {
-    return llmDesc || apiDesc;
-  }
-
-  return apiDesc;
+  return category; // Return original if no fix matched
 };
 
 const classifyItemSchema = {
@@ -64,8 +100,6 @@ const classifyItemSchema = {
               '每日任务', '监听与推送', '数据分析', '相关插件', '其他',
             ],
           },
-          name: { type: 'string', minLength: 1 },
-          description: { type: 'string', minLength: 1 },
           icon: {
             type: 'array',
             items: {
@@ -78,7 +112,7 @@ const classifyItemSchema = {
             },
           },
         },
-        required: ['category', 'name', 'description'],
+        required: ['category'],
       },
     },
   ],
@@ -108,46 +142,49 @@ export const extractLinks = (text) => {
   return [...links];
 };
 
-// Fetch metadata for a list of links
+// Fetch metadata for a list of links using curl (supports proxy)
 export const fetchMetadata = async (links) => {
   const results = [];
+
+  const curlArgs = ['-sS', '--max-time', '10'];
+  const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.ALL_PROXY;
+  if (proxy) curlArgs.push('--proxy', proxy);
+  const noProxy = process.env.NO_PROXY || process.env.no_proxy;
+  if (noProxy) curlArgs.push('--noproxy', noProxy);
+  const token = process.env.GITHUB_TOKEN;
 
   for (const url of links) {
     try {
       if (url.includes('github.com/')) {
         const repoPath = url.replace('https://github.com/', '');
-        const res = await fetch(`https://api.github.com/repos/${repoPath}`, {
-          headers: process.env.GITHUB_TOKEN
-            ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
-            : {},
+        const args = [...curlArgs];
+        if (token) args.push('-H', `Authorization: Bearer ${token}`);
+        args.push(`https://api.github.com/repos/${repoPath}`);
+        const { stdout } = await execFile('curl', args, { timeout: 12000 });
+        const data = JSON.parse(stdout);
+        results.push({
+          url,
+          name: data.name || '',
+          description: data.description || '',
+          language: data.language || '',
+          topics: data.topics || [],
         });
-        if (res.ok) {
-          const data = await res.json();
-          results.push({
-            url,
-            name: data.name || '',
-            description: data.description || '',
-            language: data.language || '',
-            topics: data.topics || [],
-          });
-          continue;
-        }
+        continue;
       }
 
       if (url.includes('greasyfork.org/')) {
         const match = url.match(/scripts\/(\d+)/);
         if (match) {
-          const res = await fetch(`https://api.greasyfork.org/scripts/${match[1]}.json`);
-          if (res.ok) {
-            const data = await res.json();
-            results.push({
-              url,
-              name: data.name || '',
-              description: data.description || '',
-              code_updated_at: data.code_updated_at || '',
-            });
-            continue;
-          }
+          const args = [...curlArgs, `https://api.greasyfork.org/scripts/${match[1]}.json`];
+          const { stdout } = await execFile('curl', args, { timeout: 12000 });
+          const data = JSON.parse(stdout);
+          results.push({
+            url,
+            name: data.name || '',
+            description: data.description || '',
+            code_updated_at: data.code_updated_at || '',
+          });
+          continue;
         }
       }
 
@@ -191,8 +228,6 @@ export const classifyWithLLM = async (items) => {
   篡改猴脚本/全站脚本, 篡改猴脚本/主站脚本, 篡改猴脚本/直播脚本
   下载工具, 直播相关工具, UP_工具, 开发, 第三方客户端
   每日任务, 监听与推送, 数据分析, 相关插件, 其他
-- name: 项目名称
-- description: 简要描述（中文）
 - icon: 技术栈标签数组，可选值：python, nodejs, typescript, javascript, rust, go, java, docker, cli, shell, vue, kotlin, swift, flutter, csharp, cplusplus, php, dart
 
 如果不是 Bilibili 相关，返回 related: false 即可。
@@ -228,10 +263,38 @@ ${itemsText}`;
     if (!Array.isArray(result)) throw new Error('LLM response is not an array');
 
     if (!validateClassify(result)) {
-      const errors = validateClassify.errors
-        .map((e) => `${e.instancePath || 'root'} ${e.message}`)
-        .join('; ');
-      throw new Error(`Invalid LLM response: ${errors}`);
+      // Try to auto-fix common issues before rejecting
+      let didFix = false;
+      for (const item of result) {
+        if (!item.related) continue;
+
+        // Auto-fix common category name variations
+        if (item.category) {
+          const fixedCategory = fixCategory(item.category);
+          if (fixedCategory !== item.category) {
+            console.warn(`  ⚠️  Auto-fixed category: "${item.category}" → "${fixedCategory}"`);
+            item.category = fixedCategory;
+            didFix = true;
+          }
+        }
+      }
+
+      if (didFix) {
+        // Re-validate after fix
+        if (validateClassify(result)) {
+          console.log('  ✓ Validation passed after auto-fix');
+        } else {
+          const errors = validateClassify.errors
+            .map((e) => `${e.instancePath || 'root'} ${e.message}`)
+            .join('; ');
+          throw new Error(`Invalid LLM response (after auto-fix): ${errors}`);
+        }
+      } else {
+        const errors = validateClassify.errors
+          .map((e) => `${e.instancePath || 'root'} ${e.message}`)
+          .join('; ');
+        throw new Error(`Invalid LLM response: ${errors}`);
+      }
     }
 
     return result;
@@ -342,18 +405,17 @@ const main = async () => {
   console.log('Classifying with LLM...');
   const classification = await classifyWithLLM(items);
 
-  // Merge LLM results back with original items (to preserve url)
-  // Also select the best description based on API and LLM results
+  // Merge LLM results back with original items
+  // Use API name directly, strip emojis from API description
   const result = items.map((item, i) => {
     const llmResult = classification[i] || {};
-    const apiDesc = item.description || '';
-    const llmDesc = llmResult.description || '';
-    const selectedDesc = selectDescription(apiDesc, llmDesc);
-
     return {
-      ...item,
-      ...llmResult,
-      description: selectedDesc,
+      url: item.url,
+      name: item.name || 'Unknown',
+      description: stripEmojis(item.description || ''),
+      icon: llmResult.icon || [],
+      related: llmResult.related,
+      category: llmResult.category,
     };
   });
 
