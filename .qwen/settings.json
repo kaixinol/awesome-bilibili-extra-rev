@@ -5,7 +5,8 @@
       "Bash(rm *)",
       "Bash(rmdir *)",
       "Bash(pnpm *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(find *)"
     ]
   },
   "$version": 3

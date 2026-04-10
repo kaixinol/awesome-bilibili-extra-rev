@@ -3,7 +3,16 @@
 > 收集一些让我们在使用B站时更加方便的浏览器扩展/脚本/程序.
 >
 > 各项目之间使用 Javascript `Array.prototype.sort()`方法进行排序，无其他意义.
+* **_斜体文本_**: 项目已超过 3 年未更新
+* **删除线文本**: 项目已被作者存档（归档）
+## 设置
+<section id="settings">
+<p id="setting-note">如果你看到这行文字，代表你没有安装这个<a href="https://greasyfork.org/zh-CN/scripts/573352-awesome-bilibili-extra-settings-filter">油猴脚本</a></p>
 
+- [ ] 隐藏超过三年未更新的项目
+
+- [ ] 隐藏已存档的项目
+</section>
 <details>
   <summary><b>图标说明</b></summary>
   <ul>
@@ -63,12 +72,6 @@
     </li>
     <li>
       <img src="svg/docker.svg?raw=true" alt="Docker">: 可通过Docker一键部署
-    </li>
-    <li>
-      <b><i>斜体文本</i></b>: 项目已超过 3 年未更新
-    </li>
-    <li>
-      <b><s>删除线文本</s></b>: 项目已被作者存档（归档）
     </li>
   </ul>
 </details>

@@ -11,7 +11,6 @@ import { checkItems, checkRepoStatus } from '../checkers/link-checker.js';
 import { readText, writeText, findYamlFiles } from '../utils/file-utils.js';
 import { processDescription } from '../validators/item-validator.js';
 import { addIcon } from '../utils/badge-utils.js';
-import { generateUserScript } from './userscript-generator.js';
 
 const README_TEMPLATE = 'README_RAW.md';
 const README_OUTPUT = 'README.md';
@@ -245,9 +244,6 @@ const main = async () => {
   } else {
     console.log('   - README.md 无变化\n');
   }
-
-  console.log('🔧 生成用户脚本...');
-  generateUserScript();
 
   console.log('✅ 同步完成！');
   console.log(`   有效: ${validItems.length} / 总计: ${allItems.length}\n`);
