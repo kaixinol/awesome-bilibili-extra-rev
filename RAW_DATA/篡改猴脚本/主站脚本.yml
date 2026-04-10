@@ -508,3 +508,27 @@
   description: 用于批量移除B站粉丝，特别支持清理非互相关注的僵尸粉。
   icon:
     - javascript
+- name: B站评论区开盒
+  link: "448434"
+  from: greasyfork
+  description: B站评论区直接展示 ip 属地
+  icon:
+    - javascript
+- name: BiliReveal - 哔哩哔哩网页版显示 IP 属地
+  link: "466815"
+  from: greasyfork
+  description: 我不喜欢 IP 属地，但是你手机都显示了，为什么电脑不显示呢？在哔哩哔哩网页版大部分场景中显示 IP 属地。
+  icon:
+    - javascript
+- name: 哔哩哔哩主页 IP 属地
+  link: "534807"
+  from: greasyfork
+  description: 在哔哩哔哩主页显示 IP 属地。仅支持显示个人主页。为了获得完整体验，建议配合「哔哩哔哩网页版显示 IP 属地」（https://greasyfork.org/scripts/466815）使用。
+  icon:
+    - javascript
+- name: Bilibili Original Avatar Downloader / Viewer
+  link: "561862"
+  from: greasyfork
+  description: Left-click to download JPG, right-click to open the original image in a new tab
+  icon:
+    - javascript
