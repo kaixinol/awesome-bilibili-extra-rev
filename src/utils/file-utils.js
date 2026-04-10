@@ -44,20 +44,3 @@ export const findYamlFiles = (dir) => {
   readDirRecursive(dir);
   return ymlFiles;
 };
-
-/**
- * Check if file exists
- * @param {string} filePath - File path
- * @returns {boolean}
- */
-export const fileExists = (filePath) => fs.existsSync(filePath);
-
-/**
- * Ensure directory exists (creates if not exists)
- * @param {string} dirPath - Directory path
- */
-export const ensureDir = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-};

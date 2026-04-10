@@ -76,13 +76,13 @@ jobs:
           AUTO_PR="${{ github.event.inputs.AUTO_PR || 'true' }}"
 
           # 检查是否有变更
-          if ! git diff --quiet HEAD -- README.md RAW_DATA/ src/user.js; then
+          if ! git diff --quiet HEAD -- README.md RAW_DATA/; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
 
             BRANCH_NAME="sync-$(date +%Y%m%d-%H%M%S)"
             git checkout -b "$BRANCH_NAME"
-            git add README.md RAW_DATA/ src/user.js
+            git add README.md RAW_DATA/
             git commit -m "sync: update readme and yaml"
             git push -u origin "$BRANCH_NAME"
 

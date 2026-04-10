@@ -9,7 +9,8 @@
     "sync:proxy": "HTTPS_PROXY=http://127.0.0.1:7897 node src/generators/sync.js",
     "check:yaml": "node src/generators/check-yaml.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint:knip": "knip"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
     "ajv": "^8.18.0",
     "axios": "^1.14.0",
     "dayjs": "^1.11.20",
+    "knip": "^6.3.1",
     "vitest": "^4.1.4",
     "yaml": "^2.8.3"
   },

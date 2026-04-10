@@ -40,17 +40,11 @@
         await navigator.clipboard.writeText(info);
         alert('已成功复制到剪贴板 📋');
       } catch (err) {
-        const textArea = document.createElement('textarea');
-        textArea.value = info;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-          document.execCommand('copy');
-          alert('已成功复制到剪贴板 📋');
-        } catch (error) {
+        const result = prompt('请手动复制以下内容：', info);
+        if (result !== null) {
+          alert('已复制 📋');
+        } else {
           alert('复制失败，请手动复制 ❌');
-        } finally {
-          document.body.removeChild(textArea);
         }
       }
     });

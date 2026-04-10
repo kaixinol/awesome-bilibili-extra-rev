@@ -58,8 +58,8 @@ jobs:
 
           echo "Found pending issues. Processing..."
 
-          # Process each issue
-          echo "$PENDING" | jq -c '.' | while read -r issue; do
+          # Process each issue (use process substitution to avoid subshell)
+          while read -r issue; do
             ISSUE_NUM=$(echo "$issue" | jq -r '.number')
             ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
             ISSUE_BODY=$(echo "$issue" | jq -r '.body')
@@ -69,8 +69,20 @@ jobs:
             echo "Processing #${ISSUE_NUM}: ${ISSUE_TITLE}"
             echo "─────────────────────────────"
 
+            # Check if PR already exists
+            EXISTING_PR=$(gh pr list --state open --head "classify-issue-${ISSUE_NUM}" --json url --jq '.[0].url' || true)
+            if [ -n "$EXISTING_PR" ]; then
+              echo "⏭️  PR already exists for #${ISSUE_NUM}, skipping."
+              continue
+            fi
+
             export ISSUE_BODY
-            node src/tools/auto-classify.mjs
+
+            # Run classification — fail gracefully
+            if ! node src/tools/auto-classify.mjs; then
+              echo "❌ Classification failed for #${ISSUE_NUM}, skipping."
+              continue
+            fi
 
             if git diff --quiet HEAD -- RAW_DATA/; then
               echo "No YAML changes for #${ISSUE_NUM}."
@@ -84,6 +96,8 @@ jobs:
                 echo "--- YAML diff ---"
                 git diff -- RAW_DATA/
                 echo "--- End diff ---"
+                # Revert changes in dry run mode
+                git checkout -- RAW_DATA/
               else
                 BRANCH_NAME="classify-issue-${ISSUE_NUM}-$(date +%s)"
                 git config user.name "github-actions[bot]"
@@ -96,11 +110,10 @@ jobs:
 
                 PR_URL=$(gh pr create \
                   --title "🔧 Auto-classify tools from #${ISSUE_NUM}" \
-                  --body "Auto-generated PR from issue #${ISSUE_NUM}: ${ISSUE_TITLE}
-
-Fixes #${ISSUE_NUM}" \
+                  --body "Auto-generated PR from issue #${ISSUE_NUM}: ${ISSUE_TITLE}\n\nFixes #${ISSUE_NUM}" \
                   --base main \
-                  --head "$BRANCH_NAME")
+                  --head "$BRANCH_NAME" \
+                  --json url --jq '.url')
 
                 gh issue comment "$ISSUE_NUM" \
                   --body "🤖 Classification complete! [PR created](${PR_URL})"
@@ -113,7 +126,7 @@ Fixes #${ISSUE_NUM}" \
             if [ "$DRY_RUN" != "true" ]; then
               gh issue edit "$ISSUE_NUM" --add-label "done"
             fi
-          done
+          done < <(echo "$PENDING" | jq -c '.')
 
           echo ""
           if [ "$DRY_RUN" = "true" ]; then
