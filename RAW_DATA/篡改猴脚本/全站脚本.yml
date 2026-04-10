@@ -34,12 +34,6 @@
   description: 根据 Bilibili 用户近期动态、粉丝勋章内容检测成分添加自定义标签.
   icon:
     - ts
-- name: bili-senior-newbie-qa
-  link: HCLonely/bili-senior-newbie-qa
-  from: github
-  description: 哔哩哔哩硬核会员搜题脚本.
-  icon:
-    - js
 - name: bilibili-cleaner
   link: festoney8/bilibili-cleaner
   from: github

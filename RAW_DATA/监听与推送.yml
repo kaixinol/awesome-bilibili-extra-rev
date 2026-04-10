@@ -79,12 +79,6 @@
   icon:
     - c#
     - exe
-- name: bilibili-live-push-qq
-  link: xuejianxianzun/bilibili-live-push-qq
-  from: github
-  description: 监控哔哩哔哩 bilibili 直播间状态，发送提醒到QQ（群）
-  icon:
-    - node
 - name: bili-notice-hoshino
   link: kushidou/bili-notice-hoshino
   from: github
@@ -229,14 +223,6 @@
   icon:
     - py
     - cli
-- name: B站长视频监控系统
-  link: CHOSENX-GPU/bili-recommend
-  from: github
-  description: B站长视频监控系统 - 自动监控B站长视频，通过Telegram推送高质量内容
-  icon:
-    - py
-    - cli
-    - docker
 - name: BiliChat Request
   link: Well2333/bilichat-request
   from: github

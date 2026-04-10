@@ -4,12 +4,6 @@
   description: 哔哩哔哩弹幕网辅助扩展，拥有视频区和直播区的人性化功能.
   icon:
     - js
-- name: bilibili-img-uploader
-  link: xlzy520/bilibili-img-uploader
-  from: github
-  description: 哔哩哔哩图床上传、短链转换插件.
-  icon:
-    - vue
 - name: tun-bili-tool
   link: tuntun0609/tun-bili-tool
   from: github

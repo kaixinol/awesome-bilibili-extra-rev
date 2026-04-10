@@ -120,13 +120,6 @@
   icon:
     - py
     - cli
-- name: bilibili-webhook
-  link: LJason77/bilibili-webhook
-  from: github
-  description: 通过 webhook 自动下载 B站 视频
-  icon:
-    - rust
-    - docker
 - name: BiliDownload
   link: KafuuNeko/BiliDownload
   from: github
@@ -221,12 +214,6 @@
   description: Bili23 Downloader CLI 命令行版本
   icon:
     - py
-- name: BilibiliVideoDownload
-  link: MunMunMiao/BilibiliVideoDownload
-  from: github
-  description: 哔哩哔哩视频下载
-  icon:
-    - ts
 - name: Bilibili-Album-Download
   link: littleplus/Bilibili-Album-Download
   from: github

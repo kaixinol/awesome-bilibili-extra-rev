@@ -98,13 +98,6 @@
   icon:
     - kotlin
     - android
-- name: BiliHub
-  link: LeonNOV/BiliHub
-  from: github
-  description: B站第三方客户端
-  icon:
-    - kotlin
-    - android
 - name: bilibili-console
   link: 12345-mcpython/bilibili-console
   from: github
@@ -330,12 +323,6 @@
   description: MiniBili官网仓库
   icon:
     - ts
-- name: B站直播间 × LX Music 点歌系统
-  link: fssdyql/bili-lx
-  from: github
-  description: B站直播间点歌机器人，支持弹幕控制LX Music
-  icon:
-    - js
 - name: Bili You
   link: Mooeantoal/bili_own
   from: github
