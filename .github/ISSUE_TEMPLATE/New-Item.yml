@@ -70,24 +70,24 @@ body:
       label: 主要语言
       description: 请选择主要使用的编程语言/框架
       options:
-        - label: None
-        - label: Python
-        - label: Vue
-        - label: TypeScript
-        - label: NodeJs
-        - label: JavaScript
-        - label: SpringBoot
-        - label: Java
-        - label: C#
-        - label: C++
-        - label: C
-        - label: PHP
-        - label: Rust
-        - label: Shell
-        - label: Kotlin
-        - label: Svelte
-        - label: Swift
-        - label: Go
+        - None
+        - Python
+        - Vue
+        - TypeScript
+        - NodeJs
+        - JavaScript
+        - SpringBoot
+        - Java
+        - C#
+        - C++
+        - C
+        - PHP
+        - Rust
+        - Shell
+        - Kotlin
+        - Svelte
+        - Swift
+        - Go
       default: 0
     validations:
       required: false
