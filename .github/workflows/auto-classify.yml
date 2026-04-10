@@ -129,7 +129,7 @@ jobs:
             if [ "$DRY_RUN" != "true" ]; then
               gh issue edit "$ISSUE_NUM" --add-label "done"
             fi
-          done < <(echo "$PENDING" | jq -c '.')
+          done < <(echo "$PENDING" | jq -c '.[]')
 
           echo ""
           if [ "$DRY_RUN" = "true" ]; then
