@@ -4,7 +4,7 @@
 >
 > 各项目之间使用 Javascript `Array.prototype.sort()`方法进行排序，无其他意义.
 * **_斜体文本_**: 项目已超过 3 年未更新
-* **删除线文本**: 项目已被作者存档（归档）
+* **~~删除线文本~~**: 项目已被作者存档（归档）
 
 此项目基于已经删除的[HCLonely/awesome-bilibili-extra-rev](https://github.com/HCLonely/awesome-bilibili-extra-rev/)项目Fork而来，并添加了强大的CI自动化流程，便于自动清理失效的死项目（以及改名）。
 
