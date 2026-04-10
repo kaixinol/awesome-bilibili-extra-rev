@@ -4,12 +4,6 @@
   description: 哔哩哔哩直播同传字幕过滤插件.
   icon:
     - js
-- name: bilibili-live-recorder
-  link: zhw2590582/bilibili-live-recorder
-  from: github
-  description: Bilibili 录播姬.
-  icon:
-    - js
 - name: bilibili-fullscreen-sc
   link: eeelester/bilibili-fullscreen-sc
   from: github

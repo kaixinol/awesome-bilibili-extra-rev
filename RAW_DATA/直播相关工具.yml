@@ -1,11 +1,3 @@
-- name: Bilibili-live-tools
-  link: Dawnnnnnn/bilibili-live-tools
-  from: github
-  description: python实现的哔哩哔哩直播助手
-  icon:
-    - py
-    - exe
-    - docker
 - name: BililiveRecorder
   link: BililiveRecorder/BililiveRecorder
   from: github
@@ -152,12 +144,6 @@
   icon:
     - go
     - cli
-- name: BiliBiliLiveAutoRec
-  link: qiaoshouzi/BiliBiliLiveAutoRec
-  from: github
-  description: 自动录播脚本
-  icon:
-    - py
 - name: biligo-live-ws
   link: eric2788/biligo-live-ws
   from: github
@@ -198,13 +184,6 @@
   description: OBS用直播插件，直播观众贡献排行榜
   icon:
     - py
-- name: bilibili-live-stream
-  link: ikexing-cn/bilibili-live-stream
-  from: github
-  description: 一个很简单的获取bilibili直播流的小工具
-  icon:
-    - go
-    - cli
 - name: BiliLiveChat
   link: BanqiJane/BiliLiveChat
   from: github
@@ -230,12 +209,6 @@
   description: 哔哩哔哩录播机
   icon:
     - go
-- name: bili-recorder
-  link: chocotan/bili-recorder
-  from: github
-  description: 这是一个bilibili直播录制工具
-  icon:
-    - jar
 - name: BililiveRecorder-WebUI
   link: BililiveRecorder/BililiveRecorder-WebUI
   from: github
@@ -646,7 +619,7 @@
   icon:
     - cli
     - docker
-- name:  Bilistream
+- name: Bilistream
   link: Detteee/bilistream
   from: github
   description: BiliStream 是一个用 Rust 编写的应用程序，旨在自动将 YouTube 或 Twitch 的直播流转播到 Bilibili。使用ffmpeg， yt-dlp和Streamlink实现转播。

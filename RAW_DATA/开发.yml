@@ -34,12 +34,6 @@
   description: Bilibili Node.js API
   icon:
     - node
-- name: Yabapi
-  link: SDLMoe/Yabapi
-  from: github
-  description: Bilibili API for Kotlin
-  icon:
-    - kotlin
 - name: BiliBiliRankingScripts
   link: Neutralization/BiliBiliRankingScripts
   from: github

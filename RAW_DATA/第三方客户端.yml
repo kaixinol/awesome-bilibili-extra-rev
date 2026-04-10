@@ -26,13 +26,6 @@
   icon:
     - c#
     - exe
-- name: BilibiliHD2
-  link: duzhaokun123/BilibiliHD2
-  from: github
-  description: 非官方哔哩哔哩客户端
-  icon:
-    - kotlin
-    - android
 - name: BilibiliLiveTV
   link: MUedsa/BilibiliLiveTV
   from: github
@@ -142,12 +135,6 @@
     - dart
     - android
     - linux
-- name: BiliStart
-  link: BlameTwo/BiliStart
-  from: github
-  description: B站第三方客户端
-  icon:
-    - c#
 - name: BilibiliTv
   link: peacefulprogram/BilibiliTv
   from: github

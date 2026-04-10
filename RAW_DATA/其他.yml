@@ -65,12 +65,6 @@
   description: 一款用于将他人的番剧列表导入自己的帐号的小工具
   icon:
     - kotlin
-- name: BiliBili-favorites-list-saver
-  link: Moemu/BiliBili-favorites-list-saver
-  from: github
-  description: B站收藏夹列表保存程序
-  icon:
-    - py
 - name: bilibili_unread
   link: powersee/bilibili_unread
   from: github
@@ -128,12 +122,6 @@
   icon:
     - c#
     - docker
-- name: Tool-Asoul-Music
-  link: sudoskys/Tool-Asoul-Music
-  from: github
-  description: 哔哩哔哩收藏夹提取音频推送到TG频道且支持自动搜索筛选推送
-  icon:
-    - py
 - name: bili-fans-medal-box
   link: XiaoMiku01/bili-fans-medal-box
   from: github
@@ -210,12 +198,6 @@
   description: 制作你的粉丝装扮卡片
   icon:
     - vue
-- name: BiliLottery
-  link: cicidoll/BiliLottery
-  from: github
-  description: B站动态评论抽奖脚本
-  icon:
-    - py
 - name: bilibili_subscriber
   link: BeiyanYunyi/bilibili_subscriber
   from: github
