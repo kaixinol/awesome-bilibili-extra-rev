@@ -496,3 +496,15 @@
   description: 一个为移动端打造的Web端B站网页播放器交互重构的篡改猴脚本。支持两侧滑动调节亮度与音量、横向滑动调节时间进度、单击显隐工具栏、双击播放/暂停。让网页版拥有原生 App 般的使用体验。
   icon:
     - js
+- name: B站一键备注 Rev
+  link: "565831"
+  from: greasyfork
+  description: B站UP主一键备注功能的重写版本，用于快速为关注的UP主添加备注。
+  icon:
+    - javascript
+- name: B站批量移除粉丝（支持批量移除非互粉用户）
+  link: "572616"
+  from: greasyfork
+  description: 用于批量移除B站粉丝，特别支持清理非互相关注的僵尸粉。
+  icon:
+    - javascript
