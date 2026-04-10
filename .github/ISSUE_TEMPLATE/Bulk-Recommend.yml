@@ -1,0 +1,33 @@
+name: 批量推荐项目
+description: 快速推荐多个项目，只需粘贴链接
+title: "[Bulk Recommend]: "
+labels: ["new-tool"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        只需粘贴多个项目的 GitHub 或 GreasyFork 链接（每行一个），其他信息会自动抓取和分类！
+        
+        示例：
+        ```
+        https://github.com/user/project-a
+        https://github.com/user/project-b
+        https://greasyfork.org/scripts/123
+        ```
+  - type: textarea
+    id: links
+    attributes:
+      label: 项目链接列表
+      description: 每行粘贴一个项目链接
+      placeholder: |
+        https://github.com/...
+        https://greasyfork.org/...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 备注（可选）
+      description: 如有特殊说明请在此填写
+    validations:
+      required: false
