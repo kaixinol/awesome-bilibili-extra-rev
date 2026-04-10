@@ -94,3 +94,9 @@
   description: 猴油脚本，用于在哔哩哔哩直播页面上显示直播流的平均码率
   icon:
     - js
+- name: Bilibili 直播间下载封面
+  link: "568124"
+  from: greasyfork
+  description: 下载封面
+  icon:
+    - javascript
