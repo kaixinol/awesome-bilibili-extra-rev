@@ -87,7 +87,6 @@ body:
         - label: Kotlin
         - label: Svelte
         - label: Swift
-        - label: Kotlin
         - label: Go
       default: 0
     validations:
