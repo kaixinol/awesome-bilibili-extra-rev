@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Awesome Bilibili Extra Settings Filter
 // @namespace    awesome-bilibili-extra-rev
-// @version      0.3
+// @version      0.4
 // @description  根据样式（斜体/删除线）过滤项目列表
 // @author       Kaesinol
-// @match        https://github.com/kaixinol/awesome-bilibili-extra-rev
+// @match        https://github.com/kaixinol/awesome-bilibili-extra-rev*
 // @run-at       document-idle
 // @grant        none
 // @license MIT
