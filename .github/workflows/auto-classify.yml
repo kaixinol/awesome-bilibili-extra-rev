@@ -49,17 +49,20 @@ jobs:
           fi
 
           # Get all open issues with 'new-tool' label but WITHOUT 'done' label
-          PENDING=$(gh issue list --label "new-tool" --state open --limit 100 --json number,title,body --jq '.[] | select(.labels | map(.name) | index("done") | not)')
+          PENDING=$(gh issue list --label "new-tool" --state open --limit 100 --json number,title,body,labels --jq 'map(select(.labels | map(.name) | index("done") | not))' 2>/dev/null || echo '[]')
 
-          if [ -z "$PENDING" ]; then
+          # Check if we got any issues
+          COUNT=$(echo "$PENDING" | jq 'length')
+          if [ "$COUNT" -eq 0 ]; then
             echo "✅ No pending issues to process."
             exit 0
           fi
 
-          echo "Found pending issues. Processing..."
+          echo "Found $COUNT pending issue(s). Processing..."
 
           # Process each issue (use process substitution to avoid subshell)
           while read -r issue; do
+            [ -z "$issue" ] && continue
             ISSUE_NUM=$(echo "$issue" | jq -r '.number')
             ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
             ISSUE_BODY=$(echo "$issue" | jq -r '.body')
