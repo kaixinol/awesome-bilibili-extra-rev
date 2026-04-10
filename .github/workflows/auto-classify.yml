@@ -111,9 +111,11 @@ jobs:
                 git commit -m "feat: auto-classify tools from #${ISSUE_NUM}"
                 git push -u origin "$BRANCH_NAME"
 
+                BODY=$(printf "Auto-generated PR from issue #%s: %s\n\nFixes #%s" "$ISSUE_NUM" "$ISSUE_TITLE" "$ISSUE_NUM")
+
                 gh pr create \
                   --title "🔧 Auto-classify tools from #${ISSUE_NUM}" \
-                  --body "Auto-generated PR from issue #${ISSUE_NUM}: ${ISSUE_TITLE}\n\nFixes #${ISSUE_NUM}" \
+                  --body "$BODY" \
                   --base main \
                   --head "$BRANCH_NAME"
 
