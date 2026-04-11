@@ -235,8 +235,21 @@ const main = async () => {
     console.log('📝 YAML 无变更\n');
   }
 
+  // 对 validItems 中改名项更新链接，并过滤死链
+  const deadLinks = new Set(changes.deadRemoved.map((i) => i.__normalizedLink));
+  const renameMap = new Map(changes.renamed.map((c) => [c.item.__normalizedLink, c.newLink]));
+
+  const finalItems = validItems
+    .filter((i) => !deadLinks.has(i.__normalizedLink))
+    .map((item) => {
+      if (renameMap.has(item.__normalizedLink)) {
+        return { ...item, link: renameMap.get(item.__normalizedLink), __normalizedLink: normalizeLink(item.from, renameMap.get(item.__normalizedLink)) };
+      }
+      return item;
+    });
+
   console.log('📄 生成 README...');
-  const readme = generateReadme(validItems);
+  const readme = generateReadme(finalItems);
   const existingReadme = fs.existsSync(README_OUTPUT) ? readText(README_OUTPUT) : '';
   if (readme !== existingReadme) {
     writeText(README_OUTPUT, readme);

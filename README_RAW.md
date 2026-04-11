@@ -26,61 +26,82 @@
   <summary><b>图标说明</b></summary>
   <ul>
     <li>
-      <img src="svg/python.svg?raw=true" alt="Python">: 主要使用语言/框架-Python
+      <img src="svg/languages/python.svg?raw=true" alt="Python">: 主要使用语言/框架-Python
     </li>
     <li>
-      <img src="svg/nodejs.svg?raw=true" alt="NodeJs">: 主要使用语言/框架-JavaScript/Node
+      <img src="svg/frameworks/nodejs.svg?raw=true" alt="NodeJs">: 主要使用语言/框架-JavaScript/Node
     </li>
     <li>
-      <img src="svg/tsnode.svg?raw=true" alt="TypeScript">: 主要使用语言/框架-TypeScript/Node
+      <img src="svg/frameworks/tsnode.svg?raw=true" alt="TypeScript">: 主要使用语言/框架-TypeScript/Node
     </li>
     <li>
-      <img src="svg/javascript.svg?raw=true" alt="JavaScript">: 主要使用语言/框架-JavaScript
+      <img src="svg/languages/javascript.svg?raw=true" alt="JavaScript">: 主要使用语言/框架-JavaScript
     </li>
     <li>
-      <img src="svg/openjdk.svg?raw=true" alt="Java">: 主要使用语言/框架-Java
+      <img src="svg/frameworks/openjdk.svg?raw=true" alt="Java">: 主要使用语言/框架-Java
     </li>
     <li>
-      <img src="svg/springboot.svg?raw=true" alt="Java">: 主要使用语言/框架-SpringBoot/Java
+      <img src="svg/frameworks/springboot.svg?raw=true" alt="Java">: 主要使用语言/框架-SpringBoot/Java
     </li>
     <li>
-      <img src="svg/csharp.svg?raw=true" alt="C#">: 主要使用语言/框架-C#
+      <img src="svg/languages/csharp.svg?raw=true" alt="C#">: 主要使用语言/框架-C#
     </li>
     <li>
-      <img src="svg/c.svg?raw=true" alt="C">: 主要使用语言/框架-C
+      <img src="svg/languages/c.svg?raw=true" alt="C">: 主要使用语言/框架-C
     </li>
     <li>
-      <img src="svg/cplusplus.svg?raw=true" alt="C++">: 主要使用语言/框架-C++
+      <img src="svg/languages/cplusplus.svg?raw=true" alt="C++">: 主要使用语言/框架-C++
     </li>
     <li>
-      <img src="svg/php.svg?raw=true" alt="PHP">: 主要使用语言/框架-PHP
+      <img src="svg/languages/php.svg?raw=true" alt="PHP">: 主要使用语言/框架-PHP
     </li>
     <li>
-      <img src="svg/rust.svg?raw=true" alt="Rust">: 主要使用语言/框架-Rust
+      <img src="svg/languages/rust.svg?raw=true" alt="Rust">: 主要使用语言/框架-Rust
     </li>
     <li>
-      <img src="svg/shell.svg?raw=true" alt="Shell">: 主要使用语言/框架-Shell
+      <img src="svg/languages/shell.svg?raw=true" alt="Shell">: 主要使用语言/框架-Shell
     </li>
     <li>
-      <img src="svg/kotlin.svg?raw=true" alt="Kotlin">: 主要使用语言/框架-Kotlin
+      <img src="svg/languages/kotlin.svg?raw=true" alt="Kotlin">: 主要使用语言/框架-Kotlin
     </li>
     <li>
-      <img src="svg/vue.svg?raw=true" alt="Vue">: 主要使用语言/框架-Vue/JavaScript
+      <img src="svg/languages/dart.svg?raw=true" alt="Dart">: 主要使用语言/框架-Dart
     </li>
     <li>
-      <img src="svg/svelte.svg?raw=true" alt="Svelte">: 主要使用语言/框架-Svelte
+      <img src="svg/frameworks/flutter.svg?raw=true" alt="Flutter">: 主要使用语言/框架-Flutter
     </li>
     <li>
-      <img src="svg/swift.svg?raw=true" alt="Svelte">: 主要使用语言/框架-Swift
+      <img src="svg/frameworks/vue.svg?raw=true" alt="Vue">: 主要使用语言/框架-Vue/JavaScript
     </li>
     <li>
-      <img src="svg/windows.svg?raw=true" alt="Windows">: 有构建好的可在Windows平台直接运行的可执行文件
+      <img src="svg/frameworks/svelte.svg?raw=true" alt="Svelte">: 主要使用语言/框架-Svelte
     </li>
     <li>
-      <img src="svg/terminal.svg?raw=true" alt="Cli">: CLI工具, 主要通过在命令行运行
+      <img src="svg/languages/swift.svg?raw=true" alt="Swift">: 主要使用语言/框架-Swift
     </li>
     <li>
-      <img src="svg/docker.svg?raw=true" alt="Docker">: 可通过Docker一键部署
+      <img src="svg/languages/go.svg?raw=true" alt="Go">: 主要使用语言/框架-Go
+    </li>
+    <li>
+      <img src="svg/platforms/windows.svg?raw=true" alt="Windows">: 有构建好的可在Windows平台直接运行的可执行文件
+    </li>
+    <li>
+      <img src="svg/tools/terminal.svg?raw=true" alt="Cli">: CLI工具, 主要通过在命令行运行
+    </li>
+    <li>
+      <img src="svg/tools/docker.svg?raw=true" alt="Docker">: 可通过Docker一键部署
+    </li>
+    <li>
+      <img src="svg/platforms/web.svg?raw=true" alt="Web">: 基于Web/浏览器的应用
+    </li>
+    <li>
+      <img src="svg/platforms/android.svg?raw=true" alt="Android">: Android平台应用
+    </li>
+    <li>
+      <img src="svg/platforms/linux.svg?raw=true" alt="Linux">: Linux平台应用
+    </li>
+    <li>
+      <img src="svg/platforms/apple.svg?raw=true" alt="MacOS">: MacOS平台应用
     </li>
   </ul>
 </details>
