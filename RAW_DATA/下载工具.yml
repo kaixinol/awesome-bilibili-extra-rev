@@ -521,7 +521,7 @@
     - exe
     - mac
 - name: Bilibili-Captions
-  link: LuShan123888/Bilibili-Captions
+  link: LuShan123888/video-captions
   from: github
   description: B站字幕下载工具，支持 API 获取和 Whisper ASR 生成
   icon:
