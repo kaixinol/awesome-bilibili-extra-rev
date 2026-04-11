@@ -51,6 +51,7 @@ const detectChanges = (checkedItems) => {
       }
 
       if (isRenamed) {
+        // 注意：这里包装了一层
         changes.renamed.push({ item, oldLink: item.link, newLink, name: item.name });
       }
     }
@@ -71,21 +72,34 @@ const detectChanges = (checkedItems) => {
 const updateYamlFiles = (changes) => {
   const filesToProcess = new Map();
 
-  for (const item of [...changes.renamed, ...changes.deadRemoved]) {
+  // 1. 处理死链：直接就是 item 对象
+  for (const item of changes.deadRemoved) {
     if (!item.__absPath) continue;
     if (!filesToProcess.has(item.__absPath)) filesToProcess.set(item.__absPath, []);
-    filesToProcess.get(item.__absPath).push(item);
+    filesToProcess.get(item.__absPath).push({ type: 'dead', data: item });
   }
 
-  for (const [filePath, items] of filesToProcess.entries()) {
+  // 2. 处理改名：需要从 wrapper 对象中提取 item
+  for (const renameObj of changes.renamed) {
+    const item = renameObj.item;
+    if (!item.__absPath) continue;
+    if (!filesToProcess.has(item.__absPath)) filesToProcess.set(item.__absPath, []);
+    filesToProcess.get(item.__absPath).push({ type: 'rename', data: renameObj });
+  }
+
+  for (const [filePath, tasks] of filesToProcess.entries()) {
     const yamlContent = loadYamlArray(filePath);
-    const deadLinks = new Set(items.filter((i) => i.status && [404, 410, 403, 451].includes(i.status)).map((i) => i.__normalizedLink));
+
+    // 提取当前文件下的死链规范化地址
+    const deadLinks = new Set(
+      tasks.filter(t => t.type === 'dead').map(t => t.data.__normalizedLink)
+    );
+
+    // 提取当前文件下的改名映射 (oldLink -> newLink)
     const renameMap = new Map();
-    for (const item of items) {
-      if (item.oldLink && item.newLink) {
-        renameMap.set(item.oldLink, item.newLink);
-      }
-    }
+    tasks.filter(t => t.type === 'rename').forEach(t => {
+      renameMap.set(t.data.oldLink, t.data.newLink);
+    });
 
     const updated = yamlContent
       .filter((entry) => {
@@ -100,8 +114,9 @@ const updateYamlFiles = (changes) => {
       });
 
     writeYamlArray(filePath, updated);
-    const removedCount = items.filter((i) => i.status && [404, 410, 403, 451].includes(i.status)).length;
-    const renamedCount = items.filter((i) => i.oldLink && i.newLink).length;
+
+    const removedCount = tasks.filter(t => t.type === 'dead').length;
+    const renamedCount = tasks.filter(t => t.type === 'rename').length;
     if (removedCount > 0) console.log(`   🗑️  ${path.basename(filePath)} 删除 ${removedCount} 个死链`);
     if (renamedCount > 0) console.log(`   ✏️  ${path.basename(filePath)} 修正 ${renamedCount} 个改名`);
   }
@@ -109,7 +124,6 @@ const updateYamlFiles = (changes) => {
 
 // ==================== 生成 README ====================
 
-// Category → heading level + display title mapping
 const CATEGORY_META = {
   '浏览器扩展/全站扩展':     { level: 3, title: '全站扩展' },
   '浏览器扩展/主站扩展':     { level: 3, title: '主站扩展' },
@@ -146,7 +160,6 @@ const generateReadme = (validItems) => {
     const categoryItems = grouped[category];
     const placeholder = `{{ RAW_DATA/${category}.yml }}`;
     const meta = CATEGORY_META[category] || { level: 2, title: category };
-    // const heading = `${'#'.repeat(meta.level)} ${meta.title}`;
 
     const sorted = categoryItems.sort((a, b) => a.name.localeCompare(b.name));
     const header = '| 项目名称&地址 | 项目描述 | Star/安装 | 最近更新 | 备注 |\n|:--- |:--- |:--- |:--- |:--- |';
@@ -202,6 +215,7 @@ const main = async () => {
   console.log(`   ✏️  改名: ${changes.renamed.length}`);
   console.log(`   💀 死链删除: ${changes.deadRemoved.length}`);
   console.log(`   ⚠️  网络错误(跳过): ${changes.networkError.length}`);
+
   if (archivedCount > 0 || inactiveCount > 0) {
     console.log(`\n📊 项目状态:`);
     if (archivedCount > 0) console.log(`   ⏸️  归档: ${archivedCount}`);
@@ -227,6 +241,7 @@ const main = async () => {
     console.log('');
   }
 
+  // 执行写入动作
   if (changes.renamed.length > 0 || changes.deadRemoved.length > 0) {
     console.log('📝 更新 YAML...');
     updateYamlFiles(changes);
@@ -235,7 +250,7 @@ const main = async () => {
     console.log('📝 YAML 无变更\n');
   }
 
-  // 对 validItems 中改名项更新链接，并过滤死链
+  // 内存中数据同步更新，用于生成 README
   const deadLinks = new Set(changes.deadRemoved.map((i) => i.__normalizedLink));
   const renameMap = new Map(changes.renamed.map((c) => [c.item.__normalizedLink, c.newLink]));
 
@@ -243,7 +258,12 @@ const main = async () => {
     .filter((i) => !deadLinks.has(i.__normalizedLink))
     .map((item) => {
       if (renameMap.has(item.__normalizedLink)) {
-        return { ...item, link: renameMap.get(item.__normalizedLink), __normalizedLink: normalizeLink(item.from, renameMap.get(item.__normalizedLink)) };
+        const newRawLink = renameMap.get(item.__normalizedLink);
+        return {
+          ...item,
+          link: newRawLink,
+          __normalizedLink: normalizeLink(item.from, newRawLink)
+        };
       }
       return item;
     });
@@ -259,7 +279,7 @@ const main = async () => {
   }
 
   console.log('✅ 同步完成！');
-  console.log(`   有效: ${validItems.length} / 总计: ${allItems.length}\n`);
+  console.log(`   有效: ${finalItems.length} / 总计: ${allItems.length}\n`);
 };
 
 main().catch((error) => {
