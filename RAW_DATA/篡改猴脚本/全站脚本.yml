@@ -65,7 +65,7 @@
   icon:
     - js
 - name: 📺 Bilibili 免登录与高分辨率视频
-  link: vruses/bili-api-interceptor
+  link: vruses/beefreely
   from: github
   description: 通过拦截一些特定 Bilibili 接口请求或响应，让你的体验能够像登录用户一样丝滑
   icon:

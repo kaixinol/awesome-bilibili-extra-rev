@@ -365,7 +365,7 @@
   icon:
     - js
 - name: Bilibili🎶音乐姬
-  link: Ocyss/bilibili-music
+  link: Ocyss/wasm-music
   from: github
   description: 仅帮助用户从视频页下载音乐(封面,Tags,歌词,字幕 写入支持).
   icon:

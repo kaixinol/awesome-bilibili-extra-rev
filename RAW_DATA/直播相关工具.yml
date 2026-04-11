@@ -55,7 +55,7 @@
     - c#
     - exe
 - name: StreamerHelper
-  link: ZhangMingZhao1/StreamerHelper
+  link: StreamerHelper/web-server
   from: github
   description: 全平台主播录制工具 & 自动投稿B站
   icon:

@@ -361,7 +361,7 @@
   icon:
     - py
 - name: BiliTicketRush
-  link: biliticket/bili_ticket_rush
+  link: Violiate/bili_ticket_rush
   from: github
   description: 超级简单易用的哔哩哔哩会员购自动抢票工具，基于Rust开发的异步多线程高性能抢票软件。
   icon:

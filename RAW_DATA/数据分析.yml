@@ -145,7 +145,7 @@
     - py
     - exe
 - name: BiliHistoryFrontend
-  link: 2977094657/BiliHistoryFrontend
+  link: LifeArchiveProject/BiliHistoryFrontend
   from: github
   description: 获取b站历史记录，保存到本地数据库，可下载对应视频及时存档，生成详细的年度总结，自动化任务部署到服务器实现自动同步，以及自动发送日志邮件（前端）
   icon:
@@ -178,7 +178,7 @@
     - cli
     - docker
 - name: BilibiliHistoryFetcher
-  link: 2977094657/BilibiliHistoryFetcher
+  link: LifeArchiveProject/BilibiliHistoryFetcher
   from: github
   description: 该项目用于获取、处理、分析和可视化哔哩哔哩用户的观看历史数据
   icon:
@@ -299,7 +299,7 @@
   icon:
     - py
 - name: BiliBili Summarize | AI 视频深度分析助手
-  link: Xuuuuu04/BiliBiliSummary
+  link: Xuuuuu04/bilibili-analysis-helper
   from: github
   description: 一键提取 B 站视频字幕、弹幕、评论及关键帧画面，通过 AI 多模态大模型生成深度总结、思维导图及舆情分析报告。
   icon:
