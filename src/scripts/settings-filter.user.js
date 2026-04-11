@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Awesome Bilibili Extra Settings Filter
 // @namespace    awesome-bilibili-extra-rev
-// @version      0.4
+// @version      0.5
 // @description  根据样式（斜体/删除线）过滤项目列表
 // @author       Kaesinol
 // @match        https://github.com/kaixinol/awesome-bilibili-extra-rev*
@@ -74,8 +74,10 @@
     run();
   }
 
-  // ✅ 关键：监听 GitHub PJAX 页面切换
+  // ✅ 关键：监听 GitHub Turbo 渲染、旧版 PJAX 和 URL 变化 (popstate)
+  document.addEventListener('turbo:render', init);
   document.addEventListener('pjax:end', init);
+  window.addEventListener('popstate', init);
 
   // ✅ 初始加载
   if (document.readyState === 'loading') {
