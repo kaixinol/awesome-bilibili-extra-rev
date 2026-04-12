@@ -381,3 +381,10 @@
   icon:
     - rust
     - cli
+- name: PiliPlus
+  link: bggRGjQaUbCoE/PiliPlus
+  from: github
+  description: PiliPlus
+  icon:
+    - dart
+    - flutter
