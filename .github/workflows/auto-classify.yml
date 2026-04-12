@@ -40,7 +40,7 @@ jobs:
           LLM_API_URL: ${{ secrets.LLM_API_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
-          DRY_RUN: ${{ github.event.inputs.DRY_RUN || 'true' }}
+          DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || github.event.inputs.DRY_RUN || 'true' }}
         run: |
           DRY_RUN="${DRY_RUN}"
 
