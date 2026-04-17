@@ -1,0 +1,47 @@
+name: Check Project Replacements
+
+on:
+  workflow_dispatch:
+    inputs:
+      DRY_RUN:
+        description: '是否仅测试运行（不创建 Issue）'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  check-replacement:
+    runs-on: ubuntu-latest
+    environment: var
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '*'
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Check for project replacements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_API_URL: ${{ secrets.LLM_API_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          DRY_RUN: ${{ github.event.inputs.DRY_RUN || 'true' }}
+        run: |
+          DRY_RUN="${DRY_RUN}"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "🧪 DRY RUN mode — will not create issues"
+          fi
+
+          node src/tools/check-replacement.mjs

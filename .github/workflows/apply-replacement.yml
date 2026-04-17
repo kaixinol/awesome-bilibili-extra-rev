@@ -1,0 +1,92 @@
+name: Apply Replacement
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  apply-replacement:
+    if: >
+      contains(github.event.comment.body, 'apply replacement') &&
+      (github.event.comment.author_association == 'OWNER' || github.event.comment.user.login == github.event.issue.user.login)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "*"
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Extract unchecked items from issue body
+        id: extract-replacements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          ISSUE_BODY=$(gh issue view "$ISSUE_NUMBER" --json body --jq '.body')
+          
+          # Extract unchecked items and their replacement URLs
+          # Format in issue: - [ ] [Original](url1) → [Replacement](url2)
+          PAIRS=""
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^-\ \[\ \] ]]; then
+              # Extract original URL
+              ORIGINAL=$(echo "$line" | grep -oP '\]\(\Khttps://github\.com/[^)]+' | head -1 || true)
+              # Extract replacement URL
+              REPLACEMENT=$(echo "$line" | grep -oP '→ \[.*?\]\(\Khttps://github\.com/[^)]+' || true)
+              
+              if [ -n "$ORIGINAL" ] && [ -n "$REPLACEMENT" ]; then
+                PAIRS="${PAIRS}${ORIGINAL}|${REPLACEMENT}\n"
+              fi
+            fi
+          done <<< "$ISSUE_BODY"
+          
+          echo "replacements=$(echo -e "$PAIRS" | sed '/^$/d')" >> "$GITHUB_OUTPUT"
+          
+          if [ -z "$PAIRS" ]; then
+            echo "No items selected for replacement. All projects will be kept."
+            exit 0
+          fi
+          echo "Projects to replace:"
+          echo -e "$PAIRS"
+
+      - name: Apply replacement
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPLACEMENTS: ${{ steps.extract-replacements.outputs.replacements }}
+        run: |
+          node src/generators/apply-replacement.js
+
+      - name: Create PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! git diff --quiet HEAD -- RAW_DATA/; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            BRANCH_NAME="replacement-$(date +%Y%m%d-%H%M%S)"
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+
+            git checkout -b "$BRANCH_NAME"
+            git add RAW_DATA/
+            git commit -m "feat: replace deprecated projects with alternatives"
+            git push -u origin "$BRANCH_NAME"
+
+            # Create PR that links to and closes the issue
+            gh pr create \
+              --title "🔄 Apply replacement for #$ISSUE_NUMBER" \
+              --body "Auto-generated replacement PR. Fixes #$ISSUE_NUMBER" \
+              --base main \
+              --head "$BRANCH_NAME"
+          else
+            echo "No changes to commit."
+          fi
