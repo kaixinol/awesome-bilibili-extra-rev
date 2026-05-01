@@ -6,6 +6,7 @@
 import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { loadAllItems } from '../data/yaml-manager.js';
+import { callLLMAPI, parseLLMJSON } from '../utils/llm-utils.js';
 
 const execFile = promisify(execFileCb);
 
@@ -82,14 +83,6 @@ const fetchReadme = async (repoPath) => {
  * Use LLM to check if project mentions being replaced
  */
 const checkWithLLM = async (projectInfo) => {
-  const LLM_API_URL = process.env.LLM_API_URL;
-  const LLM_API_KEY = process.env.LLM_API_KEY;
-  const LLM_MODEL = process.env.LLM_MODEL || 'gpt-4o-mini';
-
-  if (!LLM_API_URL) {
-    throw new Error('LLM_API_URL not set');
-  }
-
   const prompt = `你是一个项目维护助手。请分析以下GitHub项目的README内容，判断该项目是否明确说明自己已被另一个项目替代或迁移。
 
 如果项目明确提到：
@@ -121,33 +114,8 @@ const checkWithLLM = async (projectInfo) => {
 README内容：
 ${projectInfo.readme || '无法获取README'}`;
 
-  const headers = { 'Content-Type': 'application/json' };
-  if (LLM_API_KEY) headers['Authorization'] = `Bearer ${LLM_API_KEY}`;
-
-  const body = JSON.stringify({
-    model: LLM_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.1,
-    extra_body: { enable_thinking: false },
-  });
-
-  const res = await fetch(LLM_API_URL, { method: 'POST', headers, body });
-  if (!res.ok) {
-    throw new Error(`LLM API error: ${res.status} ${res.statusText}`);
-  }
-
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content;
-  
-  if (!content) {
-    throw new Error('LLM returned empty content');
-  }
-
-  // Extract JSON (handle markdown code blocks)
-  const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/```[\s\S]*?```/);
-  const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0].replace(/```/g, '')) : content;
-  
-  const result = JSON.parse(jsonStr.trim());
+  const content = await callLLMAPI(prompt);
+  const result = parseLLMJSON(content);
   
   // Validate structure
   if (typeof result.hasReplacement !== 'boolean') {

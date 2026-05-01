@@ -9,6 +9,7 @@ import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { parse, stringify } from 'yaml';
 import { loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
+import { callLLMAPI, parseLLMJSON } from '../utils/llm-utils.js';
 
 import Ajv from 'ajv';
 
@@ -200,15 +201,6 @@ export const fetchMetadata = async (links) => {
 
 // Call LLM API for classification
 export const classifyWithLLM = async (items) => {
-  const LLM_API_URL = process.env.LLM_API_URL;
-  const LLM_API_KEY = process.env.LLM_API_KEY;
-  const LLM_MODEL = process.env.LLM_MODEL || 'gpt-4o-mini';
-
-  if (!LLM_API_URL) {
-    console.error('Error: LLM_API_URL not set');
-    process.exit(1);
-  }
-
   const itemsText = items.map((item) => {
     let text = `URL: ${item.url}`;
     if (item.name) text += `\nName: ${item.name}`;
@@ -237,28 +229,9 @@ export const classifyWithLLM = async (items) => {
 项目信息：
 ${itemsText}`;
 
-  const headers = { 'Content-Type': 'application/json' };
-  if (LLM_API_KEY) headers['Authorization'] = `Bearer ${LLM_API_KEY}`;
-
-  const body = JSON.stringify({
-    model: LLM_MODEL,
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.1,
-    extra_body: { enable_thinking: false },
-  });
-
   try {
-    const res = await fetch(LLM_API_URL, { method: 'POST', headers, body });
-    if (!res.ok) throw new Error(`LLM API error: ${res.status}`);
-
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error('LLM returned empty content');
-
-    // Extract JSON (handle markdown code blocks)
-    const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/```[\s\S]*?```/);
-    const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0].replace(/```/g, '') : content;
-    const result = JSON.parse(jsonStr.trim());
+    const content = await callLLMAPI(prompt);
+    const result = parseLLMJSON(content);
 
     if (!Array.isArray(result)) throw new Error('LLM response is not an array');
 
