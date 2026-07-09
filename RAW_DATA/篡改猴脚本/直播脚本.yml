@@ -22,12 +22,6 @@
   description: 屏蔽聊天室礼物以及关键字，净化聊天室环境.
   icon:
     - js
-- name: Bilibili勋章常亮
-  link: "429846"
-  from: greasyfork
-  description: 保持哔哩哔哩直播粉丝勋章常亮.
-  icon:
-    - js
 - name: Bliveproxy
   link: xfgryujk/bliveproxy
   from: github

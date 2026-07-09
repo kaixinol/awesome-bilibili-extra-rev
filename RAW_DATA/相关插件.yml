@@ -185,7 +185,7 @@
     - C
     - ios
 - name: 🎬 BilibiliVideo
-  link: BingZi-233/BilibiliVideo
+  link: YsGqHY/BilibiliVideo
   from: github
   description: 一个基于 TabooLib 框架开发的 Minecraft Bilibili 协议插件，用于连接 Bilibili 和 Minecraft 服务器。
   icon:

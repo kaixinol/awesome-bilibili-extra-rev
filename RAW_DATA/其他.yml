@@ -60,7 +60,7 @@
   description: 哔哩哔哩个性装扮主题
   icon: []
 - name: BilibiliFork
-  link: gitofleonardo/BilibiliFork
+  link: onixer99/BilibiliFork
   from: github
   description: 一款用于将他人的番剧列表导入自己的帐号的小工具
   icon:
@@ -111,7 +111,7 @@
     - c#
     - exe
 - name: bilibili-danmaku-regex
-  link: Mark9804/bilibili-danmaku-regex
+  link: mark9804/bilibili-danmaku-regex
   from: github
   description: 结合pakku.js使用的自用B站弹幕屏蔽正则
   icon: []
@@ -141,7 +141,7 @@
   icon:
     - py
 - name: BIli.Mac.MenuBar
-  link: Richasy/BIli.Mac.MenuBar
+  link: Richasy/Bili.Mac.MenuBar
   from: github
   description: 用于在 Mac OS 的菜单栏显示登录用户的信息及订阅的视频动态
   icon:
@@ -401,7 +401,7 @@
     - py
     - exe
 - name: B站追番日历
-  link: Silentely/bili-calendar
+  link: Silentely/Bili-Calendar
   from: github
   description: 将B站追番列表一键转换为日历订阅，支持 Apple/Google/Outlook 等主流日历应用！
   icon:

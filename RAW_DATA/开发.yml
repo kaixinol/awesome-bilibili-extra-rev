@@ -211,7 +211,7 @@
   icon:
     - js
 - name: bili-live-listener
-  link: LU-JIEJIE/bili-live-listener
+  link: Lu-Jiejie/bili-live-listener
   from: github
   description: b站直播间信息监听库，包括但不限于弹幕、礼物、醒目留言、全站广播等
   icon:
