@@ -7,7 +7,7 @@ import axios from 'axios';
 import https from 'node:https';
 import http from 'node:http';
 
-const DEFAULT_CONCURRENCY = 10;
+const DEFAULT_CONCURRENCY = 5;
 const DEFAULT_RETRIES = 3;
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 (+https://github.com/kaixinol/awesome-bilibili-extra-rev)';
 const PROGRESS_INTERVAL = 100;
@@ -38,6 +38,19 @@ const drawProgressBar = (current, total, prefix = '') => {
 const extractGfId = (link) => {
   const match = String(link).match(/^(\d+)/);
   return match ? match[1] : null;
+};
+
+let currentConcurrency = DEFAULT_CONCURRENCY;
+let cooldownUntil = 0;
+let rateLimitWarnings = 0;
+
+const handleRateLimit = (source, status) => {
+  if (rateLimitWarnings < 5) {
+    rateLimitWarnings++;
+    console.warn(`\n   ⚠️  ${source} 返回 ${status}，触发限流。降低并发至 ${Math.max(1, Math.floor(currentConcurrency / 2))}，冷却 30 秒`);
+  }
+  cooldownUntil = Date.now() + 30_000;
+  currentConcurrency = Math.max(1, Math.floor(currentConcurrency / 2));
 };
 
 const shouldRetry = (status) => !status || status >= 500 || status === 429;
@@ -73,6 +86,12 @@ const checkGithub = async (item) => {
   }
 
   const { status, data } = response;
+
+  if (status === 403) {
+    handleRateLimit('GitHub API', status);
+    return { ok: false, status, finalUrl: item.__normalizedLink, attempts: 1 };
+  }
+
   const ok = status >= 200 && status < 400;
   const finalUrl = data?.html_url || item.__normalizedLink;
 
@@ -110,6 +129,7 @@ const checkGreasyfork = async (item) => {
   }
 
   if (status === 403 || status === 429) {
+    handleRateLimit('GreasyFork API', status);
     return { ok: true, status, finalUrl: item.__normalizedLink, attempts: 1 };
   }
 
@@ -160,7 +180,10 @@ const SOURCE_CHECKERS = {
  * Check all items: liveness + metadata in one API call per item
  */
 export const checkItems = async (items, options = {}) => {
-  const concurrency = Number(options.concurrency) || DEFAULT_CONCURRENCY;
+  const initialConcurrency = Number(options.concurrency) || DEFAULT_CONCURRENCY;
+  currentConcurrency = initialConcurrency;
+  cooldownUntil = 0;
+  rateLimitWarnings = 0;
 
   const uniqueItems = [];
   const seen = new Set();
@@ -172,13 +195,21 @@ export const checkItems = async (items, options = {}) => {
 
   const results = new Array(uniqueItems.length);
   let cursor = 0;
+  let activeWorkers = 0;
   let completed = 0;
   let lastProgressUpdate = 0;
   const total = uniqueItems.length;
   let outputLock = Promise.resolve();
 
   const worker = async () => {
-    while (cursor < uniqueItems.length) {
+    activeWorkers++;
+    while (cursor < uniqueItems.length && activeWorkers <= currentConcurrency) {
+      const now = Date.now();
+      if (now < cooldownUntil) {
+        await new Promise((resolve) => setTimeout(resolve, cooldownUntil - now));
+        continue;
+      }
+
       const idx = cursor++;
       const item = uniqueItems[idx];
       const checker = SOURCE_CHECKERS[item.from] || checkOther;
@@ -193,16 +224,18 @@ export const checkItems = async (items, options = {}) => {
         }
       });
     }
+    activeWorkers--;
   };
 
-  await Promise.all(Array.from({ length: Math.min(concurrency, total) }, () => worker()));
+  await Promise.all(Array.from({ length: Math.min(initialConcurrency, total) }, () => worker()));
   await outputLock;
 
   const okCount = results.filter((r) => r.ok).length;
   const failCount = total - okCount;
   const archivedCount = results.filter((r) => r.__archived).length;
   const inactiveCount = results.filter((r) => r.__inactive).length;
-  console.log(`\n   ✓ 检查完成: ${okCount} 有效, ${failCount} 无效 (并发 ${concurrency}, 重试 ${DEFAULT_RETRIES} 次)`);
+  const concurrencyNote = currentConcurrency < initialConcurrency ? `，最终并发 ${currentConcurrency}` : '';
+  console.log(`\n   ✓ 检查完成: ${okCount} 有效, ${failCount} 无效 (初始并发 ${initialConcurrency}${concurrencyNote}, 重试 ${DEFAULT_RETRIES} 次)`);
   if (archivedCount > 0 || inactiveCount > 0) {
     console.log(`   ✓ 项目状态: ${archivedCount} 个归档/删除, ${inactiveCount} 个超过3年未更新`);
   }
