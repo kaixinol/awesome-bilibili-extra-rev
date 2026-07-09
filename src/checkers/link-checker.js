@@ -1,47 +1,33 @@
 /**
  * Link validation utilities
- * Uses curl subprocess with automatic proxy detection, redirect following, and retry logic
+ * Uses axios with keep-alive connection reuse, API-only checks for GitHub/GreasyFork
  */
 
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import axios from 'axios';
+import https from 'node:https';
+import http from 'node:http';
 
-const execFileAsync = promisify(execFile);
 const DEFAULT_CONCURRENCY = 10;
-const DEFAULT_TIMEOUT_MS = 10_000;
 const DEFAULT_RETRIES = 3;
-const NULL_DEVICE = process.platform === 'win32' ? 'NUL' : '/dev/null';
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 (+https://github.com/kaixinol/awesome-bilibili-extra-rev)';
 const PROGRESS_INTERVAL = 100;
+const THREE_YEARS_AGO = new Date(Date.now() - 3 * 365.25 * 24 * 60 * 60 * 1000).toISOString();
 
-// Build curl args with proxy support
-const getCurlArgs = (url) => {
-  const args = [
-    '-L',
-    '-sS',
-    '-o', NULL_DEVICE,
-    '-w', '%{http_code} %{url_effective}',
-    '--max-time', String(Math.ceil(DEFAULT_TIMEOUT_MS / 1000)),
-    '--user-agent', USER_AGENT,
-  ];
+const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.ALL_PROXY;
 
-  const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.ALL_PROXY;
-  if (proxy) {
-    args.push('--proxy', proxy);
-  }
+const client = axios.create({
+  timeout: 10_000,
+  headers: { 'User-Agent': USER_AGENT },
+  validateStatus: () => true,
+  ...(proxyUrl
+    ? { proxy: (() => { const u = new URL(proxyUrl); return { protocol: u.protocol.replace(':', ''), host: u.hostname, port: Number(u.port) || (u.protocol === 'https:' ? 443 : 80) }; })() }
+    : {
+        proxy: false,
+        httpsAgent: new https.Agent({ keepAlive: true }),
+        httpAgent: new http.Agent({ keepAlive: true }),
+      }),
+});
 
-  const noProxy = process.env.NO_PROXY || process.env.no_proxy;
-  if (noProxy) {
-    args.push('--noproxy', noProxy);
-  }
-
-  args.push(url);
-  return args;
-};
-
-/**
- * Draw progress bar
- */
 const drawProgressBar = (current, total, prefix = '') => {
   const percentage = ((current / total) * 100).toFixed(1);
   const filled = Math.round((current / total) * 30);
@@ -49,42 +35,129 @@ const drawProgressBar = (current, total, prefix = '') => {
   process.stdout.write(`\r${prefix}[${bar}] ${percentage}% (${current}/${total})`);
 };
 
-/**
- * Check URL with curl, retries up to 3 times with exponential backoff
- */
-export const checkLink = async (url, retries = DEFAULT_RETRIES) => {
+const extractGfId = (link) => {
+  const match = String(link).match(/^(\d+)/);
+  return match ? match[1] : null;
+};
+
+const shouldRetry = (status) => !status || status >= 500 || status === 429;
+
+const requestWithRetry = async (config, retries = DEFAULT_RETRIES) => {
   for (let attempt = 0; attempt < retries; attempt += 1) {
     if (attempt > 0) {
       await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
     }
-
     try {
-      const { stdout } = await execFileAsync('curl', getCurlArgs(url), {
-        timeout: DEFAULT_TIMEOUT_MS + 1000,
-      });
-
-      const [statusStr, finalUrl] = stdout.trim().split(' ');
-      const status = parseInt(statusStr, 10);
-
-      return {
-        ok: Number.isFinite(status) && ((status >= 200 && status < 400) || status === 429),
-        status,
-        finalUrl: finalUrl || url,
-        renamed: false,
-        attempts: attempt + 1,
-      };
-    } catch {
-      if (attempt === retries - 1) {
-        return { ok: false, finalUrl: url, attempts: retries };
+      const response = await client.request(config);
+      if (!shouldRetry(response.status) || attempt === retries - 1) {
+        return response;
       }
+    } catch {
+      if (attempt === retries - 1) return null;
     }
   }
+  return null;
+};
 
-  return { ok: false, finalUrl: url, attempts: retries };
+const checkGithub = async (item) => {
+  const response = await requestWithRetry({
+    method: 'get',
+    url: `https://api.github.com/repos/${item.link}`,
+    headers: process.env.GITHUB_TOKEN
+      ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+      : {},
+  });
+
+  if (!response) {
+    return { ok: false, finalUrl: item.__normalizedLink, attempts: DEFAULT_RETRIES };
+  }
+
+  const { status, data } = response;
+  const ok = status >= 200 && status < 400;
+  const finalUrl = data?.html_url || item.__normalizedLink;
+
+  return {
+    ok,
+    status,
+    finalUrl,
+    renamed: false,
+    attempts: 1,
+    __archived: data?.archived === true,
+    __inactive: data?.pushed_at ? data.pushed_at < THREE_YEARS_AGO : false,
+    __updatedAt: data?.pushed_at || null,
+  };
+};
+
+const checkGreasyfork = async (item) => {
+  const scriptId = extractGfId(item.link);
+  if (!scriptId) {
+    return { ok: false, finalUrl: item.__normalizedLink, attempts: 0 };
+  }
+
+  const response = await requestWithRetry({
+    method: 'get',
+    url: `https://api.greasyfork.org/en/scripts/${scriptId}.json`,
+  });
+
+  if (!response) {
+    return { ok: false, finalUrl: item.__normalizedLink, attempts: DEFAULT_RETRIES };
+  }
+
+  const { status, data } = response;
+
+  if (status === 404) {
+    return { ok: false, status, finalUrl: item.__normalizedLink, attempts: 1 };
+  }
+
+  if (status === 403 || status === 429) {
+    return { ok: true, status, finalUrl: item.__normalizedLink, attempts: 1 };
+  }
+
+  const ok = status >= 200 && status < 400;
+  const slug = data?.url?.split('/').pop() || '';
+  const finalUrl = slug
+    ? `https://greasyfork.org/zh-CN/scripts/${slug}`
+    : item.__normalizedLink;
+
+  return {
+    ok,
+    status,
+    finalUrl,
+    renamed: false,
+    attempts: 1,
+    __archived: data?.deleted === true,
+    __inactive: data?.code_updated_at ? data.code_updated_at < THREE_YEARS_AGO : false,
+    __updatedAt: data?.code_updated_at || null,
+    __gfAuthor: data?.users?.[0]?.name || '',
+    __gfName: data?.name || '',
+  };
+};
+
+const checkOther = async (item) => {
+  const response = await requestWithRetry({
+    method: 'head',
+    url: item.__normalizedLink,
+    maxRedirects: 5,
+  });
+
+  if (!response) {
+    return { ok: false, finalUrl: item.__normalizedLink, attempts: DEFAULT_RETRIES };
+  }
+
+  const { status, request } = response;
+  const ok = status >= 200 && status < 400 || status === 429;
+  const finalUrl = request?.res?.responseUrl || item.__normalizedLink;
+
+  return { ok, status, finalUrl, renamed: false, attempts: 1 };
+};
+
+const SOURCE_CHECKERS = {
+  github: checkGithub,
+  greasyfork: checkGreasyfork,
 };
 
 /**
- * Check multiple items with concurrency and progress bar
+ * Check all items: liveness + metadata in one API call per item
  */
 export const checkItems = async (items, options = {}) => {
   const concurrency = Number(options.concurrency) || DEFAULT_CONCURRENCY;
@@ -108,8 +181,9 @@ export const checkItems = async (items, options = {}) => {
     while (cursor < uniqueItems.length) {
       const idx = cursor++;
       const item = uniqueItems[idx];
-      const linkResult = await checkLink(item.__normalizedLink);
-      results[idx] = { ...item, ...linkResult };
+      const checker = SOURCE_CHECKERS[item.from] || checkOther;
+      const result = await checker(item);
+      results[idx] = { ...item, ...result };
 
       outputLock = outputLock.then(() => {
         completed++;
@@ -126,168 +200,13 @@ export const checkItems = async (items, options = {}) => {
 
   const okCount = results.filter((r) => r.ok).length;
   const failCount = total - okCount;
-  console.log(`\n   ✓ 检查完成: ${okCount} 有效, ${failCount} 无效 (并发 ${concurrency}, 重试 ${DEFAULT_RETRIES} 次)\n`);
-
-  return results;
-};
-
-// ==================== Project Status Detection ====================
-
-const THREE_YEARS_AGO = new Date(Date.now() - 3 * 365.25 * 24 * 60 * 60 * 1000).toISOString();
-
-/**
- * Extract GF script ID from link
- */
-const extractGfId = (link) => {
-  const match = String(link).match(/^(\d+)/);
-  return match ? match[1] : null;
-};
-
-/**
- * Fetch GitHub repo status via API
- */
-const fetchGithubStatus = async (repoPath) => {
-  const url = `https://api.github.com/repos/${repoPath}`;
-  const args = ['-sS', '--max-time', '5'];
-
-  const token = process.env.GITHUB_TOKEN;
-  if (token) {
-    args.push('-H', `Authorization: Bearer ${token}`);
+  const archivedCount = results.filter((r) => r.__archived).length;
+  const inactiveCount = results.filter((r) => r.__inactive).length;
+  console.log(`\n   ✓ 检查完成: ${okCount} 有效, ${failCount} 无效 (并发 ${concurrency}, 重试 ${DEFAULT_RETRIES} 次)`);
+  if (archivedCount > 0 || inactiveCount > 0) {
+    console.log(`   ✓ 项目状态: ${archivedCount} 个归档/删除, ${inactiveCount} 个超过3年未更新`);
   }
-  args.push(url);
-
-  try {
-    const { execFile: execFileRaw } = await import('node:child_process');
-    const execFileCb = promisify(execFileRaw);
-    const { stdout } = await execFileCb('curl', args, { timeout: 6000 });
-    const data = JSON.parse(stdout);
-    return {
-      archived: data.archived === true,
-      updatedAt: data.pushed_at || null,
-    };
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Fetch GreasyFork script status via API
- */
-const fetchGreasyforkStatus = async (scriptId) => {
-  const url = `https://api.greasyfork.org/en/scripts/${scriptId}.json`;
-  const args = ['-sS', '--max-time', '5', url];
-
-  try {
-    const { execFile: execFileRaw } = await import('node:child_process');
-    const execFileCb = promisify(execFileRaw);
-    const { stdout } = await execFileCb('curl', args, { timeout: 6000 });
-    const data = JSON.parse(stdout);
-    const author = data.users?.[0]?.name || '';
-    return {
-      archived: data.deleted === true,
-      updatedAt: data.code_updated_at || null,
-      author,
-      name: data.name || '',
-    };
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Check project status for both GitHub and GreasyFork
- */
-export const checkRepoStatus = async (items) => {
-  const results = [...items];
-  let total = 0;
-  let completed = 0;
-  let lastProgressUpdate = 0;
-
-  // GitHub items
-  const githubItems = items.filter((item) => item.from === 'github');
-  total += githubItems.length;
-
-  let ghCursor = 0;
-  const ghWorker = async () => {
-    while (ghCursor < githubItems.length) {
-      const idx = ghCursor++;
-      const item = githubItems[idx];
-      const status = await fetchGithubStatus(item.link);
-
-      if (status) {
-        const resultIdx = results.findIndex(
-          (r) => r.__normalizedLink === item.__normalizedLink
-        );
-        if (resultIdx >= 0) {
-          results[resultIdx] = {
-            ...results[resultIdx],
-            __archived: status.archived,
-            __inactive: status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
-            __updatedAt: status.updatedAt,
-          };
-        }
-      }
-
-      completed++;
-      if (completed - lastProgressUpdate >= PROGRESS_INTERVAL || completed === total) {
-        drawProgressBar(completed, total, '   ');
-        lastProgressUpdate = completed;
-      }
-    }
-  };
-
-  // GreasyFork items
-  const gfItems = items.filter((item) => item.from === 'greasyfork');
-  total += gfItems.length;
-
-  let gfCursor = 0;
-  const gfWorker = async () => {
-    while (gfCursor < gfItems.length) {
-      const idx = gfCursor++;
-      const item = gfItems[idx];
-      const scriptId = extractGfId(item.link);
-      if (!scriptId) {
-        completed++;
-        continue;
-      }
-
-      const status = await fetchGreasyforkStatus(scriptId);
-
-      if (status) {
-        const resultIdx = results.findIndex(
-          (r) => r.__normalizedLink === item.__normalizedLink
-        );
-        if (resultIdx >= 0) {
-          results[resultIdx] = {
-            ...results[resultIdx],
-            __archived: status.archived,
-            __inactive: status.updatedAt && status.updatedAt < THREE_YEARS_AGO,
-            __updatedAt: status.updatedAt,
-            __gfAuthor: status.author || '',
-            __gfName: status.name || '',
-          };
-        }
-      }
-
-      completed++;
-      if (completed - lastProgressUpdate >= PROGRESS_INTERVAL || completed === total) {
-        drawProgressBar(completed, total, '   ');
-        lastProgressUpdate = completed;
-      }
-    }
-  };
-
-  await Promise.all([
-    Array.from({ length: Math.min(10, githubItems.length) }, () => ghWorker()),
-    Array.from({ length: Math.min(10, gfItems.length) }, () => gfWorker()),
-  ].flat());
-
-  if (total > 0) {
-    process.stdout.write('\n');
-    const archivedCount = results.filter((r) => r.__archived).length;
-    const inactiveCount = results.filter((r) => r.__inactive).length;
-    console.log(`   ✓ 项目状态检查: ${archivedCount} 个归档/删除, ${inactiveCount} 个超过3年未更新\n`);
-  }
+  console.log('');
 
   return results;
 };

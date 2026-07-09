@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadAllItems, loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
 import { normalizeLink } from '../validators/item-validator.js';
-import { checkItems, checkRepoStatus } from '../checkers/link-checker.js';
+import { checkItems } from '../checkers/link-checker.js';
 import { readText, writeText, findYamlFiles } from '../utils/file-utils.js';
 import { processDescription } from '../validators/item-validator.js';
 import { addIcon } from '../utils/badge-utils.js';
@@ -57,7 +57,7 @@ const detectChanges = (checkedItems) => {
     }
 
     const status = item.status;
-    if (status === 404 || status === 410 || status === 403 || status === 451) {
+    if (status === 404 || status === 410 || status === 451) {
       changes.deadRemoved.push(item);
     } else if (!item.ok) {
       changes.networkError.push(item);
@@ -203,9 +203,7 @@ const main = async () => {
   console.log('🔗 检查链接...');
   const checkedItems = await checkItems(allItems);
 
-  console.log('📂 检查项目状态...');
-  const itemsWithStatus = await checkRepoStatus(checkedItems);
-
+  const itemsWithStatus = checkedItems;
   const validItems = itemsWithStatus.filter((i) => i.ok || !i.status);
   const changes = detectChanges(itemsWithStatus);
 

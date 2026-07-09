@@ -36,13 +36,13 @@ jobs:
         run: |
           node -e "
           import { loadAllItems } from './src/data/yaml-manager.js';
-          import { checkRepoStatus } from './src/checkers/link-checker.js';
+          import { checkItems } from './src/checkers/link-checker.js';
 
           const main = async () => {
             const allItems = loadAllItems();
             console.log('Loading ' + allItems.length + ' projects...');
 
-            const withStatus = await checkRepoStatus(allItems);
+            const withStatus = await checkItems(allItems);
 
             const archived = [];
             const inactive = [];

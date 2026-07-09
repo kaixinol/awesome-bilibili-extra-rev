@@ -1,7 +1,7 @@
 {
   "entry": ["src/generators/sync.js", "src/generators/check-yaml.js", "src/generators/updateUser.js", "src/generators/apply-cleanup.js", "src/tools/auto-classify.mjs", "src/tools/getItems.js"],
   "project": ["src/**/*.{js,mjs}", "!src/**/*.test.{js,mjs}"],
-  "ignoreDependencies": ["dayjs", "axios", "ajv"],
+  "ignoreDependencies": ["dayjs", "ajv"],
   "rules": {
     "files": "warn",
     "exports": "warn",
