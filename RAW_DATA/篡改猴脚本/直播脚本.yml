@@ -1,55 +1,7 @@
-- name: 斗虫数据直播间可视化
-  link: "435942"
-  from: greasyfork
-  description: 高能榜显示总人数.
-  icon:
-    - js
-- name: Bilibili直播自定义皮肤背景
-  link: "387120"
-  from: greasyfork
-  description: 自定义哔哩哔哩直播的皮肤和背景，仅自己可见.
-  icon:
-    - js
-- name: B站直播间挂机助手
-  link: "406048"
-  from: greasyfork
-  description: 优化直播观看体验.
-  icon:
-    - js
-- name: Bilibili直播净化
-  link: "21416"
-  from: greasyfork
-  description: 屏蔽聊天室礼物以及关键字，净化聊天室环境.
-  icon:
-    - js
-- name: Bilibili勋章常亮
-  link: "429846"
-  from: greasyfork
-  description: 保持哔哩哔哩直播粉丝勋章常亮.
-  icon:
-    - js
 - name: Bliveproxy
   link: xfgryujk/bliveproxy
   from: github
   description: B站直播websocket hook框架.
-  icon:
-    - js
-- name: 高亮个别用户的弹幕
-  link: "418195"
-  from: greasyfork
-  description: 高亮个别用户的弹幕，有时候找一些特殊人物(其他直播主出现在直播房间)用.
-  icon:
-    - js
-- name: B站直播自动抢红包
-  link: "439169"
-  from: greasyfork
-  description: 会在进房间以后的下一次发红包时开始生效.
-  icon:
-    - js
-- name: B站直播随看随录
-  link: "435623"
-  from: greasyfork
-  description: 无需打开弹幕姬，可即时录制flv的油猴脚本，快速切片.
   icon:
     - js
 - name: bilibili_live-assistant
@@ -94,9 +46,3 @@
   description: 猴油脚本，用于在哔哩哔哩直播页面上显示直播流的平均码率
   icon:
     - js
-- name: Bilibili 直播间下载封面
-  link: "568124"
-  from: greasyfork
-  description: 下载封面
-  icon:
-    - javascript

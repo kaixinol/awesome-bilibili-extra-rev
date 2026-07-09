@@ -55,12 +55,6 @@
   icon:
     - py
     - exe
-- name: Bilibili-downloader
-  link: ZhelinCheng/bilibili-downloader
-  from: github
-  description: B 站个人动态视频下载助手，支持下载 B 站个人动态更新的 4k 视频
-  icon:
-    - ts
 - name: Bili-cli-rs
   link: niuhuan/bili-cli-rs
   from: github
@@ -221,7 +215,7 @@
   icon:
     - py
 - name: bilibili-downloader
-  link: tyokyo320/bilibili-downloader
+  link: aaron9610/bilibili-downloader
   from: github
   description: B站视频下载，支持下载大会员清晰度4K
   icon:

@@ -4,24 +4,6 @@
   description: "强大的哔哩哔哩增强脚本: 下载视频，音乐，封面，弹幕/简化直播间，评论区，首页/自定义顶栏，删除广告，夜间模式/触屏设备支持."
   icon:
     - ts
-- name: B站封面获取
-  link: "395575"
-  from: greasyfork
-  description: B站视频播放页、番剧播放页、直播间添加获取封面的按钮.
-  icon:
-    - js
-- name: B站共同关注快速查看
-  link: "428453"
-  from: greasyfork
-  description: 快速查看与特定用户的共同关注.
-  icon:
-    - js
-- name: Bilibili 解锁杜比全景声...
-  link: "441403"
-  from: greasyfork
-  description: 为 B站 Windows 平台 解锁杜比全景声 & 8K & 开启 HDR & 直播画质PRO.
-  icon:
-    - js
 - name: Bilibili-Popups
   link: sheep-realms/Bilibili-Popups
   from: github

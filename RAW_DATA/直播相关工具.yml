@@ -613,7 +613,7 @@
     - mac
     - linux
 - name: Bilirec - Bilibili 直播录制工具
-  link: eric2788/bilirec
+  link: bilirec/bilirec
   from: github
   description: 针对树莓派构建的轻量级B站直播录制系统
   icon:

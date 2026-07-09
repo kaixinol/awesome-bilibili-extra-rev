@@ -33,7 +33,7 @@
   icon:
     - py
 - name: u2bili
-  link: ame-yu/u2bili
+  link: OtaDou/ytb-dl-bilibili-playwright-uploader
   from: github
   description: youtube->bilibili 搬运脚本
   icon:
