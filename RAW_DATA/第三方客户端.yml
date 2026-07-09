@@ -388,3 +388,9 @@
   icon:
     - dart
     - flutter
+- name: bili-webos
+  link: asdf17128/bili-webos
+  from: github
+  description: Open-source Bilibili (哔哩哔哩) client for LG webOS TVs — DASH up to 4K/HDR, danmaku, bangumi & live, all driven by the remote.
+  icon:
+    - javascript
