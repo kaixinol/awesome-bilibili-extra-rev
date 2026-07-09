@@ -131,12 +131,6 @@
   icon:
     - py
     - cli
-- name: BiliMonitor
-  link: 114514ns/BiliMonitor
-  from: github
-  description: b站主播数据监测工具
-  icon:
-    - go
 - name: bilibili-xml
   link: ltzu929/bilibili-xml
   from: github
@@ -293,7 +287,7 @@
     - py
     - exe
 - name: B站视频评论爬虫工具
-  link: Yi-luo-hua/BilibiliCommentsCrawler
+  link: Yi-luo-hua/BilibiliCrawler
   from: github
   description: B站评论区爬虫工具 - 支持爬取视频、动态、文章等评论，具有现代化GUI界面
   icon:

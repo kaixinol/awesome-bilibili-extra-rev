@@ -46,12 +46,6 @@
   description: NoneBot biliav小程序 查看插件
   icon:
     - py
-- name: mirai-plugins-bilibili
-  link: Nekoer/mirai-plugins-bilibili
-  from: github
-  description: BiliBili推送
-  icon:
-    - kotlin
 - name: SagumeAutomata
   link: OhnkytaBlabdey/SagumeAutomata
   from: github
@@ -84,12 +78,6 @@
   description: 哔哩视频推荐机器人
   icon:
     - jar
-- name: nonebot_plugin_bilibili_viode
-  link: ASTWY/nonebot_plugin_bilibili_viode
-  from: github
-  description: 将用户发送的B站视频ID转为(伪)分享卡片的形式
-  icon:
-    - py
 - name: bilivedioSnap
   link: Arisuakip/bilivedioSnap
   from: github

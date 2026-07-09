@@ -529,7 +529,7 @@
     - ts
     - exe
 - name: BiliBili-Live-Recorder
-  link: CNXiaozhiy/BiliBili-Live-Recorder
+  link: CNXiaozhiy/bilibili-live-recorder
   from: github
   description: 哔哩哔哩全自动直播录制器，支持对接适配器（OneBot协议的QQ机器人）
   icon:
@@ -613,7 +613,7 @@
     - mac
     - linux
 - name: Bilirec - Bilibili 直播录制工具
-  link: eric2788/bilirec
+  link: bilirec/bilirec
   from: github
   description: 针对树莓派构建的轻量级B站直播录制系统
   icon:

@@ -27,7 +27,7 @@
     - c#
     - exe
 - name: BilibiliLiveTV
-  link: MUedsa/BilibiliLiveTV
+  link: muedsa/BilibiliLiveTV
   from: github
   description: 哔哩哔哩直播 Android TV APP
   icon:
@@ -56,7 +56,7 @@
     - exe
     - linux
 - name: bilibili-ports
-  link: reekystive/bilibili-ports
+  link: lennondotw/bilibili-ports
   from: github
   description: 哔哩哔哩官方客户端移植
   icon:
@@ -292,7 +292,7 @@
   icon:
     - ts
 - name: BiliMusic - 哔哩音乐🎵
-  link: DrearyIce/BiliMusic
+  link: nazroko/BiliMusic
   from: github
   description: 哔哩音乐🎵 - 简洁的第三方哔哩哔哩音乐客户端
   icon:
@@ -310,12 +310,6 @@
   description: MiniBili官网仓库
   icon:
     - ts
-- name: Bili You
-  link: Mooeantoal/bili_own
-  from: github
-  description: 一个用flutter制作的第三方B站客户端
-  icon:
-    - dart
 - name: BiliCompose
   link: suzhelan/BiliCompose
   from: github
