@@ -45,11 +45,12 @@ let cooldownUntil = 0;
 let rateLimitWarnings = 0;
 
 const handleRateLimit = (source, status) => {
+  const cooldownSecs = 10 + Math.floor(Math.random() * 21);
   if (rateLimitWarnings < 5) {
     rateLimitWarnings++;
-    console.warn(`\n   ⚠️  ${source} 返回 ${status}，触发限流。降低并发至 ${Math.max(1, Math.floor(currentConcurrency / 2))}，冷却 30 秒`);
+    console.warn(`\n   ⚠️  ${source} 返回 ${status}，触发限流。降低并发至 ${Math.max(1, Math.floor(currentConcurrency / 2))}，冷却 ${cooldownSecs} 秒`);
   }
-  cooldownUntil = Date.now() + 30_000;
+  cooldownUntil = Date.now() + cooldownSecs * 1000;
   currentConcurrency = Math.max(1, Math.floor(currentConcurrency / 2));
 };
 
