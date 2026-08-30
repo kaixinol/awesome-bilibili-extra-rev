@@ -220,3 +220,9 @@
   description: 基于接口返回的动态广告移除chrome插件
   icon:
     - ts
+- name: TabulaBili
+  link: tjsky/TabulaBili
+  from: github
+  description: 通过减少基于账号登录态和浏览历史的个性化推荐，让B站首页内容变得更泛化、更随机、更像公共热门流。
+  icon:
+    - javascript
