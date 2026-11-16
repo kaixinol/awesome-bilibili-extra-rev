@@ -447,3 +447,9 @@
   description: 一行代码返回B站展示SVG卡片 | 优雅、现代的B站用户卡片生成工具，通过简洁的API接口将B站用户信息转化为精美的SVG卡片。无需复杂的配置，只需一个UID，即可获得美观、可自定义的用户信息展示卡片，完美嵌入个人网站、GitHub Profile或任何需要展示B站身份的场景。
   icon:
     - js
+- name: vsummary
+  link: alpha03123/vsummary
+  from: github
+  description: 视频 AI 总结与本地知识库：B站 / YouTube / 抖音 / 本地视频转写，生成章节纪要、思维导图和知识卡片，支持跨视频问答
+  icon:
+    - python
