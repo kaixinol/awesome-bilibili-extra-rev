@@ -7,6 +7,7 @@ import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { loadAllItems } from '../data/yaml-manager.js';
 import { callLLMJSON } from '../utils/llm-utils.js';
+import { checkItems } from '../checkers/link-checker.js';
 
 const execFile = promisify(execFileCb);
 
@@ -29,6 +30,9 @@ const REPLACEMENT_SCHEMA = {
 };
 
 const rotateModels = (models, offset) => [...models.slice(offset), ...models.slice(0, offset)];
+
+export const selectStaleItems = (repoStates) =>
+  repoStates.filter((item) => item.ok && (item.__archived || item.__inactive));
 
 /**
  * Fetch GitHub repository README content
@@ -111,6 +115,7 @@ ${projectInfo.readme || '无法获取README'}`;
  */
 const main = async () => {
   const DRY_RUN = process.env.DRY_RUN === 'true';
+  const SCAN_MODE = process.env.SCAN_MODE === 'full' ? 'full' : 'stale';
   const MODELS = (process.env.LLM_MODEL || 'gpt-4o-mini').split(',').map((m) => m.trim()).filter(Boolean);
   const CONCURRENCY = Math.max(1, Number(process.env.CONCURRENCY) || MODELS.length);
 
@@ -123,7 +128,22 @@ const main = async () => {
   
   // Filter only GitHub projects
   const githubItems = allItems.filter((item) => item.from === 'github');
-  console.log(`Found ${githubItems.length} GitHub projects to check (并发 ${CONCURRENCY})`);
+  if (githubItems.length === 0) {
+    console.log('No GitHub projects found.');
+    return;
+  }
+
+  let candidates = githubItems;
+  if (SCAN_MODE === 'full') {
+    console.log('SCAN_MODE=full — 全量扫描');
+  } else {
+    const repoStates = await checkItems(githubItems);
+    candidates = selectStaleItems(repoStates);
+    const archivedCount = candidates.filter((i) => i.__archived).length;
+    const inactiveCount = candidates.filter((i) => i.__inactive && !i.__archived).length;
+    console.log(`SCAN_MODE=stale — 检查 ${repoStates.length} 个仓库，筛出 ${candidates.length} 个（归档 ${archivedCount} / 超3年未更新 ${inactiveCount}）`);
+  }
+  console.log(`Found ${candidates.length} GitHub projects to check (并发 ${CONCURRENCY})`);
 
   const replacements = [];
   let checked = 0;
@@ -131,10 +151,10 @@ const main = async () => {
 
   const worker = async (workerIndex) => {
     const model = rotateModels(MODELS, workerIndex % MODELS.length);
-    while (cursor < githubItems.length) {
-      const item = githubItems[cursor++];
+    while (cursor < candidates.length) {
+      const item = candidates[cursor++];
       checked++;
-      process.stdout.write(`Checking ${checked}/${githubItems.length}: ${item.name}\n`);
+      process.stdout.write(`Checking ${checked}/${candidates.length}: ${item.name}\n`);
 
       try {
         const readme = await fetchReadme(item.link);
@@ -161,7 +181,7 @@ const main = async () => {
     }
   };
 
-  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, githubItems.length) }, (_, i) => worker(i)));
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, candidates.length) }, (_, i) => worker(i)));
 
   console.log('\n');
   console.log(`Checked ${checked} projects, found ${replacements.length} with replacements`);

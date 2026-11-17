@@ -11,6 +11,14 @@ on:
         options:
           - 'true'
           - 'false'
+      SCAN_MODE:
+        description: '扫描范围：stale 只查已存档或3年未更新，full 全量'
+        required: false
+        default: 'stale'
+        type: choice
+        options:
+          - 'stale'
+          - 'full'
 
 jobs:
   check-replacement:
@@ -31,8 +39,10 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
           DRY_RUN: ${{ github.event.inputs.DRY_RUN || 'true' }}
+          SCAN_MODE: ${{ github.event.inputs.SCAN_MODE || 'stale' }}
         run: |
           DRY_RUN="${DRY_RUN}"
+          echo "SCAN_MODE=${SCAN_MODE}"
 
           if [ "$DRY_RUN" = "true" ]; then
             echo "🧪 DRY RUN mode — will not create issues"
