@@ -39,8 +39,15 @@ const getLLMConfig = () => {
   };
 };
 
+const RATE_LIMIT_COOLDOWN_MS = 60_000;
+const RATE_LIMIT_MAX_STRIKES = 3;
+
 const disabledModels = new Set();
 const minimalParamModels = new Set();
+const rateLimitedUntil = new Map();
+const rateLimitStrikes = new Map();
+
+const isAvailable = (model, now) => !disabledModels.has(model) && !(rateLimitedUntil.get(model) > now);
 
 const callModel = async ({ apiUrl, apiKey, model, prompt, temperature, enableThinking }) => {
   const headers = { 'Content-Type': 'application/json' };
@@ -92,10 +99,12 @@ export const callLLMAPI = async (prompt, options = {}) => {
   const requested = overrideModel
     ? (Array.isArray(overrideModel) ? overrideModel : [overrideModel])
     : defaultModels;
-  const modelsToTry = requested.filter(model => !disabledModels.has(model));
+  const now = Date.now();
+  const modelsToTry = requested.filter(model => isAvailable(model, now));
 
   if (modelsToTry.length === 0) {
-    throw new Error(`All LLM models disabled: ${[...disabledModels].join(', ')}`);
+    const cooling = requested.filter(model => rateLimitedUntil.get(model) > now);
+    throw new Error(`All LLM models unavailable (disabled: ${[...disabledModels].join(', ') || 'none'}; cooling: ${cooling.join(', ') || 'none'})`);
   }
 
   const errors = [];
@@ -104,6 +113,7 @@ export const callLLMAPI = async (prompt, options = {}) => {
     try {
       console.log(`Attempting LLM call with model: ${model}`);
       const content = await callModel(args);
+      rateLimitStrikes.delete(model);
       console.log(`✓ Successfully used model: ${model}`);
       return content;
     } catch (error) {
@@ -116,6 +126,7 @@ export const callLLMAPI = async (prompt, options = {}) => {
         minimalParamModels.add(model);
         try {
           const content = await callModel(args);
+          rateLimitStrikes.delete(model);
           console.log(`✓ Successfully used model: ${model} (minimal params)`);
           return content;
         } catch (retryError) {
@@ -124,7 +135,24 @@ export const callLLMAPI = async (prompt, options = {}) => {
         }
       }
 
-      if (error.status !== 429) disabledModels.add(model);
+      if (error.status === 429) {
+        // 冷却窗口内的重复 429 属于同一波限流，不累加；否则并发突发会瞬间凑满 3 次
+        if ((rateLimitedUntil.get(model) || 0) <= Date.now()) {
+          const strikes = (rateLimitStrikes.get(model) || 0) + 1;
+          rateLimitStrikes.set(model, strikes);
+          if (strikes >= RATE_LIMIT_MAX_STRIKES) {
+            disabledModels.add(model);
+            console.warn(`⊘ Model "${model}" rate-limited ${strikes} times, disabled permanently`);
+          } else {
+            rateLimitedUntil.set(model, Date.now() + RATE_LIMIT_COOLDOWN_MS);
+            console.warn(`⏳ Model "${model}" cooling down 60s (${strikes}/${RATE_LIMIT_MAX_STRIKES})`);
+          }
+        } else {
+          console.warn(`⏳ Model "${model}" still cooling (${rateLimitStrikes.get(model)}/${RATE_LIMIT_MAX_STRIKES})`);
+        }
+      } else {
+        disabledModels.add(model);
+      }
 
       if (modelsToTry.indexOf(model) < modelsToTry.length - 1) {
         console.log('Trying next model...');
