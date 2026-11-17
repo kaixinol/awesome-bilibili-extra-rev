@@ -2,7 +2,7 @@
  * Item validation and normalization utilities
  */
 
-export const SOURCE_PREFIX = {
+const SOURCE_PREFIX = {
   github: 'https://github.com/',
   greasyfork: 'https://greasyfork.org/zh-CN/scripts/',
 };
