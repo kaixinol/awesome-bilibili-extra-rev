@@ -206,12 +206,12 @@ const main = async () => {
 
   // Format issue body
   let body = '## Replacement Review\n\n';
-  body += '请**取消勾选**要替换的项目。默认全部保留。\n\n';
+  body += '默认全部替换。请**取消勾选**不想替换的项目。\n\n';
   body += '### 发现替代项目\n\n';
 
   replacements.forEach((r) => {
     const originalUrl = `https://github.com/${r.originalItem.link}`;
-    body += `- [ ] [${r.originalItem.name}](${originalUrl}) → [${r.replacementProject}](${r.replacementProject})\n`;
+    body += `- [x] [${r.originalItem.name}](${originalUrl}) → [${r.replacementProject}](${r.replacementProject})\n`;
     body += `  - 理由：${r.reason}\n\n`;
   });
 
