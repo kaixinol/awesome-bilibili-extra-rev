@@ -9,15 +9,11 @@ import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
 import { VALID_ICONS, normalizeIcon } from '../utils/badge-utils.js';
-import { callLLMAPI, parseLLMJSON } from '../utils/llm-utils.js';
-
-import Ajv from 'ajv';
+import { callLLMJSON } from '../utils/llm-utils.js';
 
 const execFile = promisify(execFileCb);
 
 const RAW_DATA = 'RAW_DATA';
-
-const ajv = new Ajv({ allErrors: true });
 
 // Emoji regex pattern matching most common emoji unicode ranges
 const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}]/gu;
@@ -84,6 +80,33 @@ export const fixCategory = (category) => {
 // 未知标签直接丢弃，不让一个坏 icon 导致整单失败。
 const fixIcons = (icons) => [...new Set((icons || []).map(normalizeIcon).filter(Boolean))];
 
+const fixClassification = (result) => {
+  if (!Array.isArray(result)) return false;
+
+  let didFix = false;
+  for (const item of result) {
+    if (!item?.related) continue;
+
+    if (item.category) {
+      const fixedCategory = fixCategory(item.category);
+      if (fixedCategory !== item.category) {
+        console.warn(`  ⚠️  Auto-fixed category: "${item.category}" → "${fixedCategory}"`);
+        item.category = fixedCategory;
+        didFix = true;
+      }
+    }
+
+    if (Array.isArray(item.icon)) {
+      const fixed = fixIcons(item.icon);
+      if (fixed.join() !== item.icon.join()) {
+        item.icon = fixed;
+        didFix = true;
+      }
+    }
+  }
+  return didFix;
+};
+
 // 表单里用户勾选的图标优先于 LLM 推断。
 const extractFormIcons = (body) => {
   const icons = new Set();
@@ -107,32 +130,29 @@ const classifyItemSchema = {
   type: 'object',
   properties: {
     related: { type: 'boolean' },
+    category: {
+      type: 'string',
+      enum: [
+        '浏览器扩展/全站扩展', '浏览器扩展/主站扩展', '浏览器扩展/直播扩展',
+        '篡改猴脚本/全站脚本', '篡改猴脚本/主站脚本', '篡改猴脚本/直播脚本',
+        '下载工具', '直播相关工具', 'UP_工具', '开发', '第三方客户端',
+        '每日任务', '监听与推送', '数据分析', '相关插件', '其他',
+      ],
+    },
+    icon: {
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: VALID_ICONS,
+      },
+    },
   },
   required: ['related'],
+  additionalProperties: false,
   allOf: [
     {
       if: { properties: { related: { const: true } } },
-      then: {
-        properties: {
-          category: {
-            type: 'string',
-            enum: [
-              '浏览器扩展/全站扩展', '浏览器扩展/主站扩展', '浏览器扩展/直播扩展',
-              '篡改猴脚本/全站脚本', '篡改猴脚本/主站脚本', '篡改猴脚本/直播脚本',
-              '下载工具', '直播相关工具', 'UP_工具', '开发', '第三方客户端',
-              '每日任务', '监听与推送', '数据分析', '相关插件', '其他',
-            ],
-          },
-          icon: {
-            type: 'array',
-            items: {
-              type: 'string',
-              enum: VALID_ICONS,
-            },
-          },
-        },
-        required: ['category'],
-      },
+      then: { required: ['category'] },
     },
   ],
 };
@@ -142,8 +162,6 @@ const classifySchema = {
   items: classifyItemSchema,
   minItems: 1,
 };
-
-const validateClassify = ajv.compile(classifySchema);
 
 // Extract GitHub and GreasyFork links from text
 export const extractLinks = (text) => {
@@ -248,55 +266,11 @@ export const classifyWithLLM = async (items) => {
 ${itemsText}`;
 
   try {
-    const content = await callLLMAPI(prompt);
-    const result = parseLLMJSON(content);
-
-    if (!Array.isArray(result)) throw new Error('LLM response is not an array');
-
-    if (!validateClassify(result)) {
-      // Try to auto-fix common issues before rejecting
-      let didFix = false;
-      for (const item of result) {
-        if (!item.related) continue;
-
-        // Auto-fix common category name variations
-        if (item.category) {
-          const fixedCategory = fixCategory(item.category);
-          if (fixedCategory !== item.category) {
-            console.warn(`  ⚠️  Auto-fixed category: "${item.category}" → "${fixedCategory}"`);
-            item.category = fixedCategory;
-            didFix = true;
-          }
-        }
-
-        if (item.icon) {
-          const fixed = fixIcons(item.icon);
-          if (fixed.join() !== item.icon.join()) {
-            item.icon = fixed;
-            didFix = true;
-          }
-        }
-      }
-
-      if (didFix) {
-        // Re-validate after fix
-        if (validateClassify(result)) {
-          console.log('  ✓ Validation passed after auto-fix');
-        } else {
-          const errors = validateClassify.errors
-            .map((e) => `${e.instancePath || 'root'} ${e.message}`)
-            .join('; ');
-          throw new Error(`Invalid LLM response (after auto-fix): ${errors}`);
-        }
-      } else {
-        const errors = validateClassify.errors
-          .map((e) => `${e.instancePath || 'root'} ${e.message}`)
-          .join('; ');
-        throw new Error(`Invalid LLM response: ${errors}`);
-      }
-    }
-
-    return result;
+    return await callLLMJSON(prompt, {
+      name: 'classification',
+      schema: classifySchema,
+      fix: fixClassification,
+    });
   } catch (error) {
     console.error('LLM classification failed:', error.message);
     throw error;

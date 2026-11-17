@@ -6,32 +6,26 @@
 import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
 import { loadAllItems } from '../data/yaml-manager.js';
-import { callLLMAPI, parseLLMJSON } from '../utils/llm-utils.js';
+import { callLLMJSON } from '../utils/llm-utils.js';
 
 const execFile = promisify(execFileCb);
 
 const REPLACEMENT_SCHEMA = {
-  type: 'array',
-  items: {
-    type: 'object',
-    properties: {
-      hasReplacement: { type: 'boolean' },
-    },
-    required: ['hasReplacement'],
-    allOf: [
-      {
-        if: { properties: { hasReplacement: { const: true } } },
-        then: {
-          properties: {
-            originalProject: { type: 'string' },
-            replacementProject: { type: 'string' },
-            reason: { type: 'string' },
-          },
-          required: ['originalProject', 'replacementProject', 'reason'],
-        },
-      },
-    ],
+  type: 'object',
+  properties: {
+    hasReplacement: { type: 'boolean' },
+    originalProject: { type: 'string' },
+    replacementProject: { type: 'string' },
+    reason: { type: 'string' },
   },
+  required: ['hasReplacement'],
+  additionalProperties: false,
+  allOf: [
+    {
+      if: { properties: { hasReplacement: { const: true } } },
+      then: { required: ['originalProject', 'replacementProject', 'reason'] },
+    },
+  ],
 };
 
 const rotateModels = (models, offset) => [...models.slice(offset), ...models.slice(0, offset)];
@@ -99,22 +93,14 @@ const checkWithLLM = async (projectInfo, model) => {
 README内容：
 ${projectInfo.readme || '无法获取README'}`;
 
-  const content = await callLLMAPI(prompt, { model });
-  const result = parseLLMJSON(content);
-  
-  // Validate structure
-  if (typeof result.hasReplacement !== 'boolean') {
-    throw new Error('Invalid LLM response: missing hasReplacement field');
-  }
+  const result = await callLLMJSON(prompt, {
+    name: 'replacement_check',
+    schema: REPLACEMENT_SCHEMA,
+    model,
+  });
 
-  if (result.hasReplacement) {
-    if (!result.originalProject || !result.replacementProject || !result.reason) {
-      throw new Error('Invalid LLM response: missing required fields for replacement');
-    }
-    // Ensure replacement is a valid GitHub URL
-    if (!result.replacementProject.startsWith('https://github.com/')) {
-      console.warn(`Warning: Replacement project URL may not be valid: ${result.replacementProject}`);
-    }
+  if (result.hasReplacement && !result.replacementProject.startsWith('https://github.com/')) {
+    console.warn(`Warning: Replacement project URL may not be valid: ${result.replacementProject}`);
   }
 
   return result;
