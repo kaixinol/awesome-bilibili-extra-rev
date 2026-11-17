@@ -40,16 +40,17 @@ const getLLMConfig = () => {
 };
 
 const disabledModels = new Set();
-const noThinkingModels = new Set();
+const minimalParamModels = new Set();
 
-const callModel = async ({ apiUrl, apiKey, model, prompt, temperature, enableThinking, thinkingParam }) => {
+const callModel = async ({ apiUrl, apiKey, model, prompt, temperature, enableThinking }) => {
   const headers = { 'Content-Type': 'application/json' };
   if (apiKey) {
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  const body = { model, messages: [{ role: 'user', content: prompt }], temperature };
-  if (enableThinking || thinkingParam) {
+  const body = { model, messages: [{ role: 'user', content: prompt }] };
+  if (!minimalParamModels.has(model)) {
+    body.temperature = temperature;
     body.extra_body = { enable_thinking: enableThinking };
   }
 
@@ -97,7 +98,7 @@ export const callLLMAPI = async (prompt, options = {}) => {
 
   const errors = [];
   for (const model of modelsToTry) {
-    const args = { apiUrl, apiKey, model, prompt, temperature, enableThinking, thinkingParam: !noThinkingModels.has(model) };
+    const args = { apiUrl, apiKey, model, prompt, temperature, enableThinking };
     try {
       console.log(`Attempting LLM call with model: ${model}`);
       const content = await callModel(args);
@@ -107,15 +108,15 @@ export const callLLMAPI = async (prompt, options = {}) => {
       console.warn(`✗ Model "${model}" failed: ${error.message}`);
       errors.push({ model, error: error.message });
 
-      // Some models reject enable_thinking outright; drop it and retry the same model once
-      if (error.status === 400 && args.thinkingParam) {
-        noThinkingModels.add(model);
+      // 400 通常是模型不接受可选参数（temperature / thinking）；全去掉重试一次，后续也一直用最小参数
+      if (error.status === 400 && !minimalParamModels.has(model)) {
+        minimalParamModels.add(model);
         try {
-          const content = await callModel({ ...args, thinkingParam: false });
-          console.log(`✓ Successfully used model: ${model} (no thinking param)`);
+          const content = await callModel(args);
+          console.log(`✓ Successfully used model: ${model} (minimal params)`);
           return content;
         } catch (retryError) {
-          console.warn(`✗ Model "${model}" retry failed: ${retryError.message}`);
+          console.warn(`✗ Model "${model}" minimal retry failed: ${retryError.message}`);
           errors.push({ model, error: retryError.message });
         }
       }
