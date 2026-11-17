@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata, extractFormIcons, isSubmitter, resolveIcons } from './auto-classify.mjs';
+import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata, extractFormIcons, isSubmitter, resolveIcons, detectSignals } from './auto-classify.mjs';
 
 describe('auto-classify tool', () => {
   describe('link extraction', () => {
@@ -303,6 +303,54 @@ Rust`;
 
     it('falls back to LLM when no form icons were given', () => {
       expect(resolveIcons({ llmIcons: ['rust'], trusted: true })).toEqual(['rust']);
+    });
+  });
+
+  describe('detectSignals', () => {
+    it('derives icons from languages, release assets and repo files', () => {
+      const signals = detectSignals({
+        languages: { Go: 900, TypeScript: 100 },
+        releases: [{ assets: [
+          { name: 'BBLL1.5.2.apk' },
+          { name: 'app.msi' },
+          { name: 'app.msi.sha1' },
+          { name: 'app.zip' },
+        ] }],
+        tree: {
+          tree: [{ path: 'README.md' }, { path: 'cmd/main.go' }, { path: 'Dockerfile' }],
+          truncated: false,
+        },
+      });
+
+      expect(signals.languages).toEqual(['Go 90%', 'TypeScript 10%']);
+      expect(signals.repoFiles).toEqual(['README.md', 'main.go', 'Dockerfile']);
+      expect(signals.evidenceIcons).toEqual(['go', 'android', 'windows', 'docker']);
+      expect(signals.truncated).toBe(false);
+    });
+
+    it('aggregates several releases and deduplicates asset names', () => {
+      const signals = detectSignals({
+        releases: [
+          { assets: [{ name: 'app.exe' }] },
+          { assets: [{ name: 'app.exe' }, { name: 'app.dmg' }] },
+        ],
+        tree: { tree: [{ path: 'docker-compose.yml' }], truncated: true },
+      });
+
+      expect(signals.releaseAssets).toEqual(['app.exe', 'app.dmg']);
+      expect(signals.evidenceIcons).toEqual(['windows', 'apple', 'docker']);
+      expect(signals.truncated).toBe(true);
+    });
+
+    it('tolerates missing and error responses', () => {
+      expect(detectSignals()).toEqual({
+        languages: [], releaseAssets: [], repoFiles: [], truncated: false, evidenceIcons: [],
+      });
+      expect(detectSignals({ releases: { message: 'Not Found' }, tree: null }).releaseAssets).toEqual([]);
+    });
+
+    it('normalizes GitHub language names', () => {
+      expect(detectSignals({ languages: { 'C++': 10, 'C#': 2 } }).evidenceIcons).toEqual(['cpp']);
     });
   });
 });

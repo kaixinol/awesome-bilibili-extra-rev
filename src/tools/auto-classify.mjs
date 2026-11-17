@@ -196,10 +196,66 @@ export const extractLinks = (text) => {
   return [...links];
 };
 
+const fetchJson = async (curlArgs, token, url) => {
+  const args = [...curlArgs];
+  if (token && url.includes('api.github.com')) args.push('-H', `Authorization: Bearer ${token}`);
+  const { stdout } = await execFile('curl', [...args, url], { timeout: 12000 });
+  return JSON.parse(stdout);
+};
+
+// 单个信号 API 失败不应拖垮整单分类。
+const safeFetchJson = async (curlArgs, token, url) => {
+  try {
+    const data = await fetchJson(curlArgs, token, url);
+    return data?.message ? null : data;
+  } catch {
+    return null;
+  }
+};
+
+const RELEASE_ICONS = {
+  exe: 'windows', msi: 'windows',
+  apk: 'android',
+  dmg: 'apple', pkg: 'apple',
+  appimage: 'linux', deb: 'linux', rpm: 'linux',
+};
+const DOCKER_FILES = new Set(['dockerfile', 'docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml']);
+const MAX_ASSETS = 20;
+const MAX_FILES = 60;
+
+// 从仓库 API 证据推导确定的 icon，并整理出给 LLM 看的信号文本。
+export const detectSignals = ({ languages, releases, tree } = {}) => {
+  const langEntries = languages && !Array.isArray(languages)
+    ? Object.entries(languages).sort((a, b) => b[1] - a[1])
+    : [];
+  const total = langEntries.reduce((sum, [, bytes]) => sum + bytes, 0);
+  const languageNames = langEntries.slice(0, 3).map(([name, bytes]) =>
+    total ? `${name} ${Math.round((bytes / total) * 100)}%` : name);
+
+  const releaseAssets = Array.isArray(releases)
+    ? [...new Set(releases.flatMap((r) => (r.assets || []).map((a) => a.name)))].slice(0, MAX_ASSETS)
+    : [];
+  const paths = Array.isArray(tree?.tree) ? tree.tree.map((f) => f.path) : [];
+  const repoFiles = [...new Set(paths.map((p) => p.split('/').pop()))].slice(0, MAX_FILES);
+
+  const releaseIcons = releaseAssets.flatMap((name) => {
+    const ext = name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
+    return ext && Object.hasOwn(RELEASE_ICONS, ext) ? [RELEASE_ICONS[ext]] : [];
+  });
+  const langIcon = langEntries.length ? normalizeIcon(langEntries[0][0]) : null;
+  const dockerIcon = repoFiles.some((f) => DOCKER_FILES.has(f.toLowerCase())) ? 'docker' : null;
+
+  return {
+    languages: languageNames,
+    releaseAssets,
+    repoFiles,
+    truncated: Boolean(tree?.truncated),
+    evidenceIcons: [...new Set([langIcon, ...releaseIcons, dockerIcon].filter(Boolean))],
+  };
+};
+
 // Fetch metadata for a list of links using curl (supports proxy)
 export const fetchMetadata = async (links) => {
-  const results = [];
-
   const curlArgs = ['-sS', '--max-time', '10'];
   const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.ALL_PROXY;
   if (proxy) curlArgs.push('--proxy', proxy);
@@ -207,48 +263,57 @@ export const fetchMetadata = async (links) => {
   if (noProxy) curlArgs.push('--noproxy', noProxy);
   const token = process.env.GITHUB_TOKEN;
 
-  for (const url of links) {
+  const fetchOne = async (url) => {
     try {
       if (url.includes('github.com/')) {
-        const repoPath = url.replace('https://github.com/', '');
-        const args = [...curlArgs];
-        if (token) args.push('-H', `Authorization: Bearer ${token}`);
-        args.push(`https://api.github.com/repos/${repoPath}`);
-        const { stdout } = await execFile('curl', args, { timeout: 12000 });
-        const data = JSON.parse(stdout);
-        results.push({
+        const repoPath = url.replace('https://github.com/', '').split('/').slice(0, 2).join('/');
+        const base = `https://api.github.com/repos/${repoPath}`;
+        const repo = await safeFetchJson(curlArgs, token, base);
+        if (!repo) return { url };
+
+        const branch = encodeURIComponent(repo.default_branch || 'HEAD');
+        const [languages, releases, tree] = await Promise.all([
+          safeFetchJson(curlArgs, token, `${base}/languages`),
+          safeFetchJson(curlArgs, token, `${base}/releases?per_page=5`),
+          safeFetchJson(curlArgs, token, `${base}/git/trees/${branch}?recursive=1`),
+        ]);
+
+        return {
           url,
-          name: data.name || '',
-          description: data.description || '',
-          language: data.language || '',
-          topics: data.topics || [],
-        });
-        continue;
+          name: repo.name || '',
+          description: repo.description || '',
+          language: repo.language || '',
+          topics: repo.topics || [],
+          repoOwner: repo.owner?.login || '',
+          signals: detectSignals({ languages, releases, tree }),
+        };
       }
 
       if (url.includes('greasyfork.org/')) {
         const match = url.match(/scripts\/(\d+)/);
         if (match) {
-          const args = [...curlArgs, `https://api.greasyfork.org/scripts/${match[1]}.json`];
-          const { stdout } = await execFile('curl', args, { timeout: 12000 });
-          const data = JSON.parse(stdout);
-          results.push({
-            url,
-            name: data.name || '',
-            description: data.description || '',
-            code_updated_at: data.code_updated_at || '',
-          });
-          continue;
+          const data = await safeFetchJson(curlArgs, token, `https://api.greasyfork.org/scripts/${match[1]}.json`);
+          if (data) {
+            return {
+              url,
+              name: data.name || '',
+              description: data.description || '',
+              code_updated_at: data.code_updated_at || '',
+            };
+          }
         }
       }
 
-      // Fallback: just URL
-      results.push({ url });
+      return { url };
     } catch {
-      results.push({ url });
+      return { url };
     }
-  }
+  };
 
+  const results = [];
+  for (let i = 0; i < links.length; i += 4) {
+    results.push(...await Promise.all(links.slice(i, i + 4).map(fetchOne)));
+  }
   return results;
 };
 
