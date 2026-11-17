@@ -13,7 +13,7 @@ const parseModelList = (modelEnv) => {
   if (!modelEnv) {
     return ['gpt-4o-mini']; // Default fallback
   }
-  
+
   // Split by comma and trim whitespace, filter out empty strings
   return modelEnv.split(',')
     .map(model => model.trim())
@@ -39,6 +39,36 @@ const getLLMConfig = () => {
   };
 };
 
+const disabledModels = new Set();
+const noThinkingModels = new Set();
+
+const callModel = async ({ apiUrl, apiKey, model, prompt, temperature, enableThinking, thinkingParam }) => {
+  const headers = { 'Content-Type': 'application/json' };
+  if (apiKey) {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
+
+  const body = { model, messages: [{ role: 'user', content: prompt }], temperature };
+  if (enableThinking || thinkingParam) {
+    body.extra_body = { enable_thinking: enableThinking };
+  }
+
+  const res = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const text = await res.text();
+    const error = new Error(`LLM API error: ${res.status} ${res.statusText}: ${text.slice(0, 200)}`);
+    error.status = res.status;
+    throw error;
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('LLM returned empty content');
+  }
+  return content;
+};
+
 /**
  * Call LLM API with a given prompt, with automatic fallback to alternative models
  * @param {string} prompt - The prompt to send to the LLM
@@ -50,69 +80,54 @@ const getLLMConfig = () => {
  */
 export const callLLMAPI = async (prompt, options = {}) => {
   const { apiUrl, apiKey, models: defaultModels } = getLLMConfig();
-
   const {
     model: overrideModel,
     temperature = 0.1,
     enableThinking = false,
   } = options;
 
-  // Determine which models to try (override or default)
-  let modelsToTry;
-  if (overrideModel) {
-    modelsToTry = Array.isArray(overrideModel) 
-      ? overrideModel 
-      : [overrideModel];
-  } else {
-    modelsToTry = defaultModels;
+  const requested = overrideModel
+    ? (Array.isArray(overrideModel) ? overrideModel : [overrideModel])
+    : defaultModels;
+  const modelsToTry = requested.filter(model => !disabledModels.has(model));
+
+  if (modelsToTry.length === 0) {
+    throw new Error(`All LLM models disabled: ${[...disabledModels].join(', ')}`);
   }
 
-  // Try each model in sequence until one succeeds
   const errors = [];
   for (const model of modelsToTry) {
+    const args = { apiUrl, apiKey, model, prompt, temperature, enableThinking, thinkingParam: !noThinkingModels.has(model) };
     try {
       console.log(`Attempting LLM call with model: ${model}`);
-      
-      const headers = { 'Content-Type': 'application/json' };
-      if (apiKey) {
-        headers['Authorization'] = `Bearer ${apiKey}`;
-      }
-
-      const body = JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        temperature,
-        extra_body: { enable_thinking: enableThinking },
-      });
-
-      const res = await fetch(apiUrl, { method: 'POST', headers, body });
-
-      if (!res.ok) {
-        throw new Error(`LLM API error: ${res.status} ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content;
-
-      if (!content) {
-        throw new Error('LLM returned empty content');
-      }
-
+      const content = await callModel(args);
       console.log(`✓ Successfully used model: ${model}`);
       return content;
     } catch (error) {
       console.warn(`✗ Model "${model}" failed: ${error.message}`);
       errors.push({ model, error: error.message });
-      
-      // Continue to next model if available
+
+      // Some models reject enable_thinking outright; drop it and retry the same model once
+      if (error.status === 400 && args.thinkingParam) {
+        noThinkingModels.add(model);
+        try {
+          const content = await callModel({ ...args, thinkingParam: false });
+          console.log(`✓ Successfully used model: ${model} (no thinking param)`);
+          return content;
+        } catch (retryError) {
+          console.warn(`✗ Model "${model}" retry failed: ${retryError.message}`);
+          errors.push({ model, error: retryError.message });
+        }
+      }
+
+      if (error.status !== 429) disabledModels.add(model);
+
       if (modelsToTry.indexOf(model) < modelsToTry.length - 1) {
-        console.log(`Trying next model...`);
-        continue;
+        console.log('Trying next model...');
       }
     }
   }
 
-  // All models failed
   const errorSummary = errors.map(e => `${e.model}: ${e.error}`).join('; ');
   throw new Error(`All LLM models failed. Errors: ${errorSummary}`);
 };
