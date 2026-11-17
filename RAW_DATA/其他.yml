@@ -453,3 +453,6 @@
   description: 视频 AI 总结与本地知识库：B站 / YouTube / 抖音 / 本地视频转写，生成章节纪要、思维导图和知识卡片，支持跨视频问答
   icon:
     - python
+    - js
+    - exe
+    - web
