@@ -13,7 +13,7 @@
     - kotlin
     - android
 - name: Bili.Uwp
-  link: Richasy/Bili.Uwp
+  link: Richasy/Bili.Copilot
   from: github
   description: 适用于新系统UI的第三方哔哩哔哩UWP客户端
   icon:
@@ -365,7 +365,7 @@
     - ts
     - exe
 - name: BiliTV 📺
-  link: Hyper-Beast/BiliTV
+  link: Hyper-Beast/BiliTVNative
   from: github
   description: 一款基于Bilipai开发的哔哩哔哩TV版APP
   icon:
