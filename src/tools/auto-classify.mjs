@@ -107,8 +107,8 @@ const fixClassification = (result) => {
   return didFix;
 };
 
-// 表单里用户勾选的图标优先于 LLM 推断。
-const extractFormIcons = (body) => {
+// 表单勾选：作者本人提交时直接采信，其他人提交时只作为 LLM 的参考提示。
+export const extractFormIcons = (body) => {
   const icons = new Set();
   let section = '';
   for (const line of (body || '').split(/\r?\n/)) {
@@ -125,6 +125,23 @@ const extractFormIcons = (body) => {
   }
   return [...icons];
 };
+
+const ownerFromUrl = (url) =>
+  url?.includes('github.com/') ? url.replace('https://github.com/', '').split('/')[0] : '';
+
+// 只比 GitHub repo owner；GreasyFork 拿不到可核对的 GitHub login，一律按非作者处理。
+export const isSubmitter = (item, issueAuthor) => {
+  const owner = item.repoOwner || ownerFromUrl(item.url);
+  return Boolean(owner && issueAuthor) && owner.toLowerCase() === issueAuthor.toLowerCase();
+};
+
+// 表单、API 证据、LLM 三路取并集；非作者的表单只出现在 prompt 里，不进这里。
+export const resolveIcons = ({ formIcons = [], evidenceIcons = [], llmIcons = [], trusted = false }) =>
+  [...new Set([
+    ...(trusted ? formIcons : []),
+    ...evidenceIcons,
+    ...llmIcons,
+  ].map(normalizeIcon).filter(Boolean))];
 
 const classifyItemSchema = {
   type: 'object',
@@ -244,6 +261,8 @@ export const classifyWithLLM = async (items) => {
     if (item.language) text += `\nLanguage: ${item.language}`;
     if (item.topics?.length) text += `\nTopics: ${item.topics.join(', ')}`;
     if (item.code_updated_at) text += `\nLast Updated: ${item.code_updated_at}`;
+    if (item.confirmedIcons?.length) text += `\nConfirmed icons (from project author): ${item.confirmedIcons.join(', ')}`;
+    if (item.formHints?.length) text += `\nReported icon hints (unverified): ${item.formHints.join(', ')}`;
     return text;
   }).join('\n\n---\n\n');
 
@@ -257,6 +276,9 @@ export const classifyWithLLM = async (items) => {
   下载工具, 直播相关工具, UP_工具, 开发, 第三方客户端
   每日任务, 监听与推送, 数据分析, 相关插件, 其他
 - icon: 技术栈标签数组，可选值：${VALID_ICONS.join(', ')}
+
+Confirmed icons 由项目作者本人填写，可直接采用；Reported icon hints 由推荐者填写、未经核实，只作参考，与项目信息矛盾时不要采用。
+表单未列出的图标，只要项目确实符合，仍可补充。
 
 如果不是 Bilibili 相关，返回 related: false 即可。
 
@@ -349,6 +371,7 @@ export const applyToYaml = (results) => {
 // Main
 const main = async () => {
   const issueBody = process.env.ISSUE_BODY;
+  const issueAuthor = process.env.ISSUE_AUTHOR || '';
   if (!issueBody) {
     console.error('Error: ISSUE_BODY not set');
     process.exit(1);
@@ -364,16 +387,26 @@ const main = async () => {
   if (formIcons.length > 0) {
     console.log(`Form icons: ${formIcons.join(', ')}`);
   }
+  console.log(`Issue author: ${issueAuthor || '(unknown)'}`);
 
   console.log(`Found ${links.length} link(s):`);
   links.forEach((l) => console.log(`  - ${l}`));
   console.log('');
 
   console.log('Fetching metadata...');
-  const items = await fetchMetadata(links);
+  const items = (await fetchMetadata(links)).map((item) => {
+    const authorOwnRepo = isSubmitter(item, issueAuthor);
+    return {
+      ...item,
+      isSubmitter: authorOwnRepo,
+      confirmedIcons: authorOwnRepo ? formIcons : [],
+      formHints: authorOwnRepo ? [] : formIcons,
+    };
+  });
   items.forEach((item) => {
+    const trust = item.isSubmitter ? 'author' : 'reporter';
     if (item.name) {
-      console.log(`  ✅ ${item.name}: ${item.description || '(no description)'}`);
+      console.log(`  ✅ ${item.name} [${trust}]: ${item.description || '(no description)'}`);
     } else {
       console.log(`  ⚠️  Could not fetch metadata for ${item.url}`);
     }
@@ -391,7 +424,12 @@ const main = async () => {
       url: item.url,
       name: item.name || 'Unknown',
       description: stripEmojis(item.description || ''),
-      icon: [...new Set([...formIcons, ...fixIcons(llmResult.icon)])],
+      icon: resolveIcons({
+        formIcons,
+        evidenceIcons: item.evidenceIcons,
+        llmIcons: llmResult.icon,
+        trusted: item.isSubmitter,
+      }),
       related: llmResult.related,
       category: llmResult.category,
     };

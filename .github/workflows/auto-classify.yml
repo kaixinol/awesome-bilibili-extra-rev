@@ -43,7 +43,7 @@ jobs:
           fi
 
           # Get all open issues with 'new-tool' label but WITHOUT 'done' label
-          PENDING=$(gh issue list --label "new-tool" --state open --limit 100 --json number,title,body,labels --jq 'map(select(.labels | map(.name) | index("done") | not))' 2>/dev/null || echo '[]')
+          PENDING=$(gh issue list --label "new-tool" --state open --limit 100 --json number,title,body,labels,author --jq 'map(select(.labels | map(.name) | index("done") | not))' 2>/dev/null || echo '[]')
 
           # Check if we got any issues
           COUNT=$(echo "$PENDING" | jq 'length')
@@ -60,10 +60,11 @@ jobs:
             ISSUE_NUM=$(echo "$issue" | jq -r '.number')
             ISSUE_TITLE=$(echo "$issue" | jq -r '.title')
             ISSUE_BODY=$(echo "$issue" | jq -r '.body')
+            ISSUE_AUTHOR=$(echo "$issue" | jq -r '.author.login // ""')
 
             echo ""
             echo "─────────────────────────────"
-            echo "Processing #${ISSUE_NUM}: ${ISSUE_TITLE}"
+            echo "Processing #${ISSUE_NUM}: ${ISSUE_TITLE} (by ${ISSUE_AUTHOR:-unknown})"
             echo "─────────────────────────────"
 
             # Check if PR already exists
@@ -73,7 +74,7 @@ jobs:
               continue
             fi
 
-            export ISSUE_BODY
+            export ISSUE_BODY ISSUE_AUTHOR
 
             # Run classification — fail gracefully
             if ! node src/tools/auto-classify.mjs; then

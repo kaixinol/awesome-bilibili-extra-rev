@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata } from './auto-classify.mjs';
+import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata, extractFormIcons, isSubmitter, resolveIcons } from './auto-classify.mjs';
 
 describe('auto-classify tool', () => {
   describe('link extraction', () => {
@@ -208,6 +208,101 @@ https://github.com/user/repo
 
     it('returns unknown category unchanged if no fix matches', () => {
       expect(fixCategory('some-random-category')).toBe('some-random-category');
+    });
+  });
+
+  describe('extractFormIcons', () => {
+    it('reads the language dropdown and checked boxes', () => {
+      const body = `### 主要语言
+
+Go
+
+### 其他标志
+
+- [x] Windows
+- [x] Cli
+- [ ] Docker
+- [ ] Web`;
+      expect(extractFormIcons(body)).toEqual(['go', 'windows', 'terminal']);
+    });
+
+    it('ignores unrelated form sections', () => {
+      const body = `### 项目分类
+
+其他
+
+### 项目描述
+
+Python 写的
+
+### 主要语言
+
+Rust`;
+      expect(extractFormIcons(body)).toEqual(['rust']);
+    });
+
+    it('drops unknown values and normalizes aliases', () => {
+      const body = `### 主要语言
+
+未知 / 其他
+
+### 其他标志
+
+- [x] MacOS
+- [x] Docker
+- [ ] Android`;
+      expect(extractFormIcons(body)).toEqual(['apple', 'docker']);
+    });
+
+    it('handles empty bodies', () => {
+      expect(extractFormIcons('')).toEqual([]);
+      expect(extractFormIcons(null)).toEqual([]);
+    });
+  });
+
+  describe('isSubmitter', () => {
+    it('matches the GitHub repo owner case-insensitively', () => {
+      expect(isSubmitter({ url: 'https://github.com/Foo/bar' }, 'foo')).toBe(true);
+    });
+
+    it('rejects a different reporter', () => {
+      expect(isSubmitter({ url: 'https://github.com/Foo/bar' }, 'someone-else')).toBe(false);
+    });
+
+    it('treats GreasyFork links and a missing author as non-author', () => {
+      expect(isSubmitter({ url: 'https://greasyfork.org/scripts/123' }, 'foo')).toBe(false);
+      expect(isSubmitter({ url: 'https://github.com/Foo/bar' }, '')).toBe(false);
+    });
+
+    it('prefers the API owner when a repo was renamed', () => {
+      expect(isSubmitter({ url: 'https://github.com/Old/bar', repoOwner: 'New' }, 'new')).toBe(true);
+    });
+  });
+
+  describe('resolveIcons', () => {
+    it('unions form, evidence and LLM icons for the author', () => {
+      expect(resolveIcons({
+        formIcons: ['go'],
+        evidenceIcons: ['windows'],
+        llmIcons: ['docker', 'go'],
+        trusted: true,
+      })).toEqual(['go', 'windows', 'docker']);
+    });
+
+    it('keeps reporter form icons out of the result (prompt hints only)', () => {
+      expect(resolveIcons({
+        formIcons: ['go'],
+        llmIcons: ['docker'],
+        trusted: false,
+      })).toEqual(['docker']);
+    });
+
+    it('normalizes and drops unknown icons', () => {
+      expect(resolveIcons({ llmIcons: ['C++', 'MacOS', 'nope'] })).toEqual(['cpp', 'apple']);
+    });
+
+    it('falls back to LLM when no form icons were given', () => {
+      expect(resolveIcons({ llmIcons: ['rust'], trusted: true })).toEqual(['rust']);
     });
   });
 });
