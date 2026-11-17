@@ -7,8 +7,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile as execFileCb } from 'node:child_process';
 import { promisify } from 'node:util';
-import { parse, stringify } from 'yaml';
 import { loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
+import { VALID_ICONS, normalizeIcon } from '../utils/badge-utils.js';
 import { callLLMAPI, parseLLMJSON } from '../utils/llm-utils.js';
 
 import Ajv from 'ajv';
@@ -81,6 +81,28 @@ export const fixCategory = (category) => {
   return category; // Return original if no fix matched
 };
 
+// 未知标签直接丢弃，不让一个坏 icon 导致整单失败。
+const fixIcons = (icons) => [...new Set((icons || []).map(normalizeIcon).filter(Boolean))];
+
+// 表单里用户勾选的图标优先于 LLM 推断。
+const extractFormIcons = (body) => {
+  const icons = new Set();
+  let section = '';
+  for (const line of (body || '').split(/\r?\n/)) {
+    const heading = line.match(/^###\s+(.+?)\s*$/);
+    if (heading) {
+      section = heading[1];
+      continue;
+    }
+    if (section !== '主要语言' && section !== '其他标志') continue;
+
+    const checked = line.match(/^\s*[-*]?\s*\[[xX]\]\s*(.*)$/);
+    const canonical = normalizeIcon(checked ? checked[1].trim() : line.trim());
+    if (canonical) icons.add(canonical);
+  }
+  return [...icons];
+};
+
 const classifyItemSchema = {
   type: 'object',
   properties: {
@@ -105,11 +127,7 @@ const classifyItemSchema = {
             type: 'array',
             items: {
               type: 'string',
-              enum: [
-                'python', 'nodejs', 'typescript', 'javascript', 'rust', 'go', 'java',
-                'docker', 'cli', 'shell', 'vue', 'kotlin', 'swift', 'flutter',
-                'csharp', 'cplusplus', 'php', 'dart',
-              ],
+              enum: VALID_ICONS,
             },
           },
         },
@@ -220,7 +238,7 @@ export const classifyWithLLM = async (items) => {
   篡改猴脚本/全站脚本, 篡改猴脚本/主站脚本, 篡改猴脚本/直播脚本
   下载工具, 直播相关工具, UP_工具, 开发, 第三方客户端
   每日任务, 监听与推送, 数据分析, 相关插件, 其他
-- icon: 技术栈标签数组，可选值：python, nodejs, typescript, javascript, rust, go, java, docker, cli, shell, vue, kotlin, swift, flutter, csharp, cplusplus, php, dart
+- icon: 技术栈标签数组，可选值：${VALID_ICONS.join(', ')}
 
 如果不是 Bilibili 相关，返回 related: false 即可。
 
@@ -247,6 +265,14 @@ ${itemsText}`;
           if (fixedCategory !== item.category) {
             console.warn(`  ⚠️  Auto-fixed category: "${item.category}" → "${fixedCategory}"`);
             item.category = fixedCategory;
+            didFix = true;
+          }
+        }
+
+        if (item.icon) {
+          const fixed = fixIcons(item.icon);
+          if (fixed.join() !== item.icon.join()) {
+            item.icon = fixed;
             didFix = true;
           }
         }
@@ -360,6 +386,11 @@ const main = async () => {
     return;
   }
 
+  const formIcons = extractFormIcons(issueBody);
+  if (formIcons.length > 0) {
+    console.log(`Form icons: ${formIcons.join(', ')}`);
+  }
+
   console.log(`Found ${links.length} link(s):`);
   links.forEach((l) => console.log(`  - ${l}`));
   console.log('');
@@ -386,7 +417,7 @@ const main = async () => {
       url: item.url,
       name: item.name || 'Unknown',
       description: stripEmojis(item.description || ''),
-      icon: llmResult.icon || [],
+      icon: [...new Set([...formIcons, ...fixIcons(llmResult.icon)])],
       related: llmResult.related,
       category: llmResult.category,
     };
