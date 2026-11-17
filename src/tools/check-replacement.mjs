@@ -34,45 +34,30 @@ const REPLACEMENT_SCHEMA = {
   },
 };
 
+const rotateModels = (models, offset) => [...models.slice(offset), ...models.slice(0, offset)];
+
 /**
  * Fetch GitHub repository README content
  */
 const fetchReadme = async (repoPath) => {
-  const args = ['-sS', '--max-time', '10'];
-
   const token = process.env.GITHUB_TOKEN;
-  if (token) {
-    args.push('-H', `Authorization: Bearer ${token}`);
-  }
 
-  // Try README.md first, then README.rst, then README
-  const readmeFiles = ['README.md', 'README.rst', 'README'];
-  
-  for (const readmeFile of readmeFiles) {
-    try {
-      const url = `https://raw.githubusercontent.com/${repoPath}/main/${readmeFile}`;
-      args.push(url);
-      const { stdout } = await execFile('curl', args, { timeout: 12000 });
-      if (stdout && stdout.trim()) {
-        return stdout;
-      }
-    } catch {
-      // Try next file
-      continue;
-    }
-  }
+  const fetchUrl = async (url) => {
+    const args = ['-sS', '--max-time', '10'];
+    if (token) args.push('-H', `Authorization: Bearer ${token}`);
+    args.push(url);
+    const { stdout } = await execFile('curl', args, { timeout: 12000 });
+    return stdout && stdout.trim() ? stdout : null;
+  };
 
-  // If main branch fails, try master
-  for (const readmeFile of readmeFiles) {
-    try {
-      const url = `https://raw.githubusercontent.com/${repoPath}/master/${readmeFile}`;
-      args[args.length - 1] = url; // Replace last arg (URL)
-      const { stdout } = await execFile('curl', args, { timeout: 12000 });
-      if (stdout && stdout.trim()) {
-        return stdout;
+  for (const branch of ['main', 'master']) {
+    for (const readmeFile of ['README.md', 'README.rst', 'README']) {
+      try {
+        const content = await fetchUrl(`https://raw.githubusercontent.com/${repoPath}/${branch}/${readmeFile}`);
+        if (content) return content;
+      } catch {
+        // Try next file
       }
-    } catch {
-      continue;
     }
   }
 
@@ -82,7 +67,7 @@ const fetchReadme = async (repoPath) => {
 /**
  * Use LLM to check if project mentions being replaced
  */
-const checkWithLLM = async (projectInfo) => {
+const checkWithLLM = async (projectInfo, model) => {
   const prompt = `你是一个项目维护助手。请分析以下GitHub项目的README内容，判断该项目是否明确说明自己已被另一个项目替代或迁移。
 
 如果项目明确提到：
@@ -114,7 +99,7 @@ const checkWithLLM = async (projectInfo) => {
 README内容：
 ${projectInfo.readme || '无法获取README'}`;
 
-  const content = await callLLMAPI(prompt);
+  const content = await callLLMAPI(prompt, { model });
   const result = parseLLMJSON(content);
   
   // Validate structure
@@ -140,7 +125,9 @@ ${projectInfo.readme || '无法获取README'}`;
  */
 const main = async () => {
   const DRY_RUN = process.env.DRY_RUN === 'true';
-  
+  const MODELS = (process.env.LLM_MODEL || 'gpt-4o-mini').split(',').map((m) => m.trim()).filter(Boolean);
+  const CONCURRENCY = Math.max(1, Number(process.env.CONCURRENCY) || MODELS.length);
+
   if (DRY_RUN) {
     console.log('🧪 DRY RUN mode — will not create issues');
   }
@@ -150,43 +137,45 @@ const main = async () => {
   
   // Filter only GitHub projects
   const githubItems = allItems.filter((item) => item.from === 'github');
-  console.log(`Found ${githubItems.length} GitHub projects to check`);
+  console.log(`Found ${githubItems.length} GitHub projects to check (并发 ${CONCURRENCY})`);
 
   const replacements = [];
   let checked = 0;
+  let cursor = 0;
 
-  for (const item of githubItems) {
-    checked++;
-    process.stdout.write(`Checking ${checked}/${githubItems.length}: ${item.name}\n`);
+  const worker = async (workerIndex) => {
+    const model = rotateModels(MODELS, workerIndex % MODELS.length);
+    while (cursor < githubItems.length) {
+      const item = githubItems[cursor++];
+      checked++;
+      process.stdout.write(`Checking ${checked}/${githubItems.length}: ${item.name}\n`);
 
-    try {
-      // Fetch README
-      const readme = await fetchReadme(item.link);
-      
-      // Check with LLM
-      const result = await checkWithLLM({
-        name: item.name,
-        link: item.link,
-        description: item.description,
-        readme: readme,
-      });
+      try {
+        const readme = await fetchReadme(item.link);
+        const result = await checkWithLLM({
+          name: item.name,
+          link: item.link,
+          description: item.description,
+          readme,
+        }, model);
 
-      if (result.hasReplacement) {
-        console.log(`\n✅ Found replacement for ${item.name}`);
-        console.log(`   → ${result.replacementProject}`);
-        console.log(`   Reason: ${result.reason}`);
-        
-        replacements.push({
-          originalItem: item,
-          ...result,
-        });
+        if (result.hasReplacement) {
+          console.log(`\n✅ Found replacement for ${item.name}`);
+          console.log(`   → ${result.replacementProject}`);
+          console.log(`   Reason: ${result.reason}`);
+
+          replacements.push({
+            originalItem: item,
+            ...result,
+          });
+        }
+      } catch (error) {
+        console.error(`\n❌ Error checking ${item.name}: ${error.message}`);
       }
-
-    } catch (error) {
-      console.error(`\n❌ Error checking ${item.name}: ${error.message}`);
-      // Continue with next item
     }
-  }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, githubItems.length) }, (_, i) => worker(i)));
 
   console.log('\n');
   console.log(`Checked ${checked} projects, found ${replacements.length} with replacements`);
