@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata, extractFormIcons, isSubmitter, resolveIcons, detectSignals } from './auto-classify.mjs';
+import { extractLinks, classifyWithLLM, fixCategory, stripEmojis, fetchMetadata, extractFormIcons, isSubmitter, resolveIcons, detectSignals, renderItemText } from './auto-classify.mjs';
 
 describe('auto-classify tool', () => {
   describe('link extraction', () => {
@@ -351,6 +351,46 @@ Rust`;
 
     it('normalizes GitHub language names', () => {
       expect(detectSignals({ languages: { 'C++': 10, 'C#': 2 } }).evidenceIcons).toEqual(['cpp']);
+    });
+  });
+
+  describe('renderItemText', () => {
+    it('renders repo evidence and author-confirmed icons', () => {
+      const text = renderItemText({
+        url: 'https://github.com/Foo/bar',
+        signals: {
+          languages: ['Go 90%'],
+          releaseAssets: ['app.exe', 'app.exe.sha1', 'app.zip'],
+          repoFiles: ['go.mod', 'Dockerfile'],
+          truncated: false,
+        },
+        confirmedIcons: ['go'],
+        formHints: [],
+      });
+
+      expect(text).toContain('Languages (by bytes): Go 90%');
+      expect(text).toContain('Release asset types: exe, zip');
+      expect(text).toContain('Repo files: go.mod, Dockerfile');
+      expect(text).toContain('Confirmed icons (from project author): go');
+      expect(text).not.toContain('Reported icon hints');
+    });
+
+    it('marks reporter hints and a truncated file tree', () => {
+      const text = renderItemText({
+        url: 'https://github.com/Foo/bar',
+        signals: {
+          languages: [],
+          releaseAssets: [],
+          repoFiles: ['README.md'],
+          truncated: true,
+        },
+        confirmedIcons: [],
+        formHints: ['windows'],
+      });
+
+      expect(text).toContain('Reported icon hints (unverified): windows');
+      expect(text).toContain('Repo files (truncated): README.md');
+      expect(text).not.toContain('Confirmed icons');
     });
   });
 });

@@ -63,7 +63,7 @@ export const fixCategory = (category) => {
     [/^(直播工具|直播)/, '直播相关工具'],
     [/^(UP|up主|UP主|创作)/, 'UP_工具'],
     [/^(API|SDK|开发工具|开发)/, '开发'],
-    [/^(第三方|客户端|客户端)/, '第三方客户端'],
+    [/^(第三方|客户端)/, '第三方客户端'],
     [/^(每日任务|日常任务|日常)/, '每日任务'],
     [/^(监听|推送|监控)/, '监听与推送'],
     [/^(数据分析|统计)/, '数据分析'],
@@ -107,9 +107,12 @@ const fixClassification = (result) => {
   return didFix;
 };
 
+const isGitHubUrl = (url) => Boolean(url?.includes('github.com/'));
+const githubRepoPath = (url) => url.replace('https://github.com/', '').split('/').slice(0, 2).join('/');
+
 // 表单勾选：作者本人提交时直接采信，其他人提交时只作为 LLM 的参考提示。
 export const extractFormIcons = (body) => {
-  const icons = new Set();
+  const values = [];
   let section = '';
   for (const line of (body || '').split(/\r?\n/)) {
     const heading = line.match(/^###\s+(.+?)\s*$/);
@@ -120,14 +123,12 @@ export const extractFormIcons = (body) => {
     if (section !== '主要语言' && section !== '其他标志') continue;
 
     const checked = line.match(/^\s*[-*]?\s*\[[xX]\]\s*(.*)$/);
-    const canonical = normalizeIcon(checked ? checked[1].trim() : line.trim());
-    if (canonical) icons.add(canonical);
+    values.push(checked ? checked[1].trim() : line.trim());
   }
-  return [...icons];
+  return fixIcons(values);
 };
 
-const ownerFromUrl = (url) =>
-  url?.includes('github.com/') ? url.replace('https://github.com/', '').split('/')[0] : '';
+const ownerFromUrl = (url) => isGitHubUrl(url) ? githubRepoPath(url).split('/')[0] : '';
 
 // 只比 GitHub repo owner；GreasyFork 拿不到可核对的 GitHub login，一律按非作者处理。
 export const isSubmitter = (item, issueAuthor) => {
@@ -137,11 +138,11 @@ export const isSubmitter = (item, issueAuthor) => {
 
 // 表单、API 证据、LLM 三路取并集；非作者的表单只出现在 prompt 里，不进这里。
 export const resolveIcons = ({ formIcons = [], evidenceIcons = [], llmIcons = [], trusted = false }) =>
-  [...new Set([
+  fixIcons([
     ...(trusted ? formIcons : []),
     ...evidenceIcons,
     ...llmIcons,
-  ].map(normalizeIcon).filter(Boolean))];
+  ]);
 
 const classifyItemSchema = {
   type: 'object',
@@ -149,12 +150,7 @@ const classifyItemSchema = {
     related: { type: 'boolean' },
     category: {
       type: 'string',
-      enum: [
-        '浏览器扩展/全站扩展', '浏览器扩展/主站扩展', '浏览器扩展/直播扩展',
-        '篡改猴脚本/全站脚本', '篡改猴脚本/主站脚本', '篡改猴脚本/直播脚本',
-        '下载工具', '直播相关工具', 'UP_工具', '开发', '第三方客户端',
-        '每日任务', '监听与推送', '数据分析', '相关插件', '其他',
-      ],
+      enum: VALID_CATEGORIES,
     },
     icon: {
       type: 'array',
@@ -196,23 +192,20 @@ export const extractLinks = (text) => {
   return [...links];
 };
 
-const fetchJson = async (curlArgs, token, url) => {
-  const args = [...curlArgs];
-  if (token && url.includes('api.github.com')) args.push('-H', `Authorization: Bearer ${token}`);
-  const { stdout } = await execFile('curl', [...args, url], { timeout: 12000 });
-  return JSON.parse(stdout);
-};
-
 // 单个信号 API 失败不应拖垮整单分类。
-const safeFetchJson = async (curlArgs, token, url) => {
+const fetchJson = async (curlArgs, token, url) => {
   try {
-    const data = await fetchJson(curlArgs, token, url);
+    const args = [...curlArgs];
+    if (token && url.includes('api.github.com')) args.push('-H', `Authorization: Bearer ${token}`);
+    const { stdout } = await execFile('curl', [...args, url], { timeout: 12000 });
+    const data = JSON.parse(stdout);
     return data?.message ? null : data;
   } catch {
     return null;
   }
 };
 
+const assetExt = (name) => name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
 const RELEASE_ICONS = {
   exe: 'windows', msi: 'windows',
   apk: 'android',
@@ -220,6 +213,7 @@ const RELEASE_ICONS = {
   appimage: 'linux', deb: 'linux', rpm: 'linux',
 };
 const DOCKER_FILES = new Set(['dockerfile', 'docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml']);
+const IGNORED_ASSET_EXTS = new Set(['sha1', 'sig', 'md5', 'txt', 'json']);
 const MAX_ASSETS = 20;
 const MAX_FILES = 60;
 
@@ -239,10 +233,10 @@ export const detectSignals = ({ languages, releases, tree } = {}) => {
   const repoFiles = [...new Set(paths.map((p) => p.split('/').pop()))].slice(0, MAX_FILES);
 
   const releaseIcons = releaseAssets.flatMap((name) => {
-    const ext = name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
+    const ext = assetExt(name);
     return ext && Object.hasOwn(RELEASE_ICONS, ext) ? [RELEASE_ICONS[ext]] : [];
   });
-  const langIcon = langEntries.length ? normalizeIcon(langEntries[0][0]) : null;
+  const langIcon = langEntries[0]?.[0] || '';
   const dockerIcon = repoFiles.some((f) => DOCKER_FILES.has(f.toLowerCase())) ? 'docker' : null;
 
   return {
@@ -250,7 +244,7 @@ export const detectSignals = ({ languages, releases, tree } = {}) => {
     releaseAssets,
     repoFiles,
     truncated: Boolean(tree?.truncated),
-    evidenceIcons: [...new Set([langIcon, ...releaseIcons, dockerIcon].filter(Boolean))],
+    evidenceIcons: fixIcons([langIcon, ...releaseIcons, dockerIcon]),
   };
 };
 
@@ -265,17 +259,17 @@ export const fetchMetadata = async (links) => {
 
   const fetchOne = async (url) => {
     try {
-      if (url.includes('github.com/')) {
-        const repoPath = url.replace('https://github.com/', '').split('/').slice(0, 2).join('/');
+      if (isGitHubUrl(url)) {
+        const repoPath = githubRepoPath(url);
         const base = `https://api.github.com/repos/${repoPath}`;
-        const repo = await safeFetchJson(curlArgs, token, base);
+        const repo = await fetchJson(curlArgs, token, base);
         if (!repo) return { url };
 
         const branch = encodeURIComponent(repo.default_branch || 'HEAD');
         const [languages, releases, tree] = await Promise.all([
-          safeFetchJson(curlArgs, token, `${base}/languages`),
-          safeFetchJson(curlArgs, token, `${base}/releases?per_page=5`),
-          safeFetchJson(curlArgs, token, `${base}/git/trees/${branch}?recursive=1`),
+          fetchJson(curlArgs, token, `${base}/languages`),
+          fetchJson(curlArgs, token, `${base}/releases?per_page=5`),
+          fetchJson(curlArgs, token, `${base}/git/trees/${branch}?recursive=1`),
         ]);
 
         return {
@@ -292,7 +286,7 @@ export const fetchMetadata = async (links) => {
       if (url.includes('greasyfork.org/')) {
         const match = url.match(/scripts\/(\d+)/);
         if (match) {
-          const data = await safeFetchJson(curlArgs, token, `https://api.greasyfork.org/scripts/${match[1]}.json`);
+          const data = await fetchJson(curlArgs, token, `https://api.greasyfork.org/scripts/${match[1]}.json`);
           if (data) {
             return {
               url,
@@ -317,33 +311,49 @@ export const fetchMetadata = async (links) => {
   return results;
 };
 
+export const renderItemText = (item) => {
+  let text = `URL: ${item.url}`;
+  if (item.name) text += `\nName: ${item.name}`;
+  if (item.description) text += `\nDescription: ${item.description}`;
+  if (item.language) text += `\nLanguage: ${item.language}`;
+  if (item.topics?.length) text += `\nTopics: ${item.topics.join(', ')}`;
+  if (item.code_updated_at) text += `\nLast Updated: ${item.code_updated_at}`;
+
+  const signals = item.signals;
+  if (signals?.languages.length) text += `\nLanguages (by bytes): ${signals.languages.join(', ')}`;
+  if (signals?.releaseAssets.length) {
+    const exts = [...new Set(signals.releaseAssets.map(assetExt))]
+      .filter((ext) => ext && !IGNORED_ASSET_EXTS.has(ext));
+    if (exts.length) text += `\nRelease asset types: ${exts.join(', ')}`;
+  }
+  if (signals?.repoFiles.length) {
+    text += `\nRepo files${signals.truncated ? ' (truncated)' : ''}: ${signals.repoFiles.slice(0, 30).join(', ')}`;
+  }
+
+  if (item.confirmedIcons?.length) text += `\nConfirmed icons (from project author): ${item.confirmedIcons.join(', ')}`;
+  if (item.formHints?.length) text += `\nReported icon hints (unverified): ${item.formHints.join(', ')}`;
+  return text;
+};
+
 // Call LLM API for classification
 export const classifyWithLLM = async (items) => {
-  const itemsText = items.map((item) => {
-    let text = `URL: ${item.url}`;
-    if (item.name) text += `\nName: ${item.name}`;
-    if (item.description) text += `\nDescription: ${item.description}`;
-    if (item.language) text += `\nLanguage: ${item.language}`;
-    if (item.topics?.length) text += `\nTopics: ${item.topics.join(', ')}`;
-    if (item.code_updated_at) text += `\nLast Updated: ${item.code_updated_at}`;
-    if (item.confirmedIcons?.length) text += `\nConfirmed icons (from project author): ${item.confirmedIcons.join(', ')}`;
-    if (item.formHints?.length) text += `\nReported icon hints (unverified): ${item.formHints.join(', ')}`;
-    return text;
-  }).join('\n\n---\n\n');
+  const itemsText = items.map(renderItemText).join('\n\n---\n\n');
 
   const prompt = `你是一个 Bilibili 项目分类助手。请分析以下项目信息，判断每个项目是否属于 Bilibili 相关工具/脚本/扩展。
 
 如果是 Bilibili 相关，请返回：
 - related: true
-- category: 从以下类别中选择
-  浏览器扩展/全站扩展, 浏览器扩展/主站扩展, 浏览器扩展/直播扩展
-  篡改猴脚本/全站脚本, 篡改猴脚本/主站脚本, 篡改猴脚本/直播脚本
-  下载工具, 直播相关工具, UP_工具, 开发, 第三方客户端
-  每日任务, 监听与推送, 数据分析, 相关插件, 其他
+- category: 从以下类别中选择：${VALID_CATEGORIES.join(', ')}
 - icon: 技术栈标签数组，可选值：${VALID_ICONS.join(', ')}
 
 Confirmed icons 由项目作者本人填写，可直接采用；Reported icon hints 由推荐者填写、未经核实，只作参考，与项目信息矛盾时不要采用。
 表单未列出的图标，只要项目确实符合，仍可补充。
+
+判定 icon 时优先依据 Languages (by bytes) / Release asset types / Repo files 等实际证据：
+- .exe/.msi → windows, .apk → android, .dmg/.pkg → apple, .AppImage/.deb/.rpm → linux
+- Dockerfile / docker-compose.yml → docker
+- 主要语言取 Languages 第一项对应的标签
+不要仅凭仓库名或描述猜测平台；证据不足时不要硬加平台标签。
 
 如果不是 Bilibili 相关，返回 related: false 即可。
 
@@ -380,7 +390,7 @@ export const applyToYaml = (results) => {
   };
 
   const extractLink = (url) => {
-    if (url.includes('github.com/')) return url.replace('https://github.com/', '');
+    if (isGitHubUrl(url)) return githubRepoPath(url);
     if (url.includes('greasyfork.org/')) {
       const match = url.match(/scripts\/(\d+)/);
       return match ? match[1] : url;
@@ -388,8 +398,7 @@ export const applyToYaml = (results) => {
     return url;
   };
 
-  const extractFrom = (url) =>
-    url.includes('github.com/') ? 'github' : 'greasyfork';
+  const extractFrom = (url) => isGitHubUrl(url) ? 'github' : 'greasyfork';
 
   // Group by category
   const byCategory = {};
@@ -491,7 +500,7 @@ const main = async () => {
       description: stripEmojis(item.description || ''),
       icon: resolveIcons({
         formIcons,
-        evidenceIcons: item.evidenceIcons,
+        evidenceIcons: item.signals?.evidenceIcons,
         llmIcons: llmResult.icon,
         trusted: item.isSubmitter,
       }),
