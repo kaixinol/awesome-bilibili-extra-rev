@@ -157,7 +157,7 @@ const main = async () => {
 
   for (const item of githubItems) {
     checked++;
-    process.stdout.write(`\rChecking ${checked}/${githubItems.length}: ${item.name}`);
+    process.stdout.write(`Checking ${checked}/${githubItems.length}: ${item.name}\n`);
 
     try {
       // Fetch README
