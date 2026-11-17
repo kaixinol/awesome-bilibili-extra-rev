@@ -603,6 +603,9 @@
   icon:
     - py
     - cli
+    - linux
+    - mac
+    - exe
 - name: 哔哩哔哩直播姬（仮）
   link: Rsplwe/bili-live-hime
   from: github
@@ -619,6 +622,8 @@
   icon:
     - cli
     - docker
+    - go
+    - android
 - name: Bilistream
   link: Detteee/bilistream
   from: github

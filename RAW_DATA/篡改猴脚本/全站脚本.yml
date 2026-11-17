@@ -70,6 +70,7 @@
   description: 通过拦截一些特定 Bilibili 接口请求或响应，让你的体验能够像登录用户一样丝滑
   icon:
     - js
+    - ts
 - name: 📚 Bilibili 提纯器 - B站大学模式
   link: qihaiqianqiu/bilibili-purifier
   from: github

@@ -40,6 +40,7 @@
     - node
     - py
     - cli
+    - js
 - name: auto-bilibili-recorder
   link: valkjsaaa/auto-bilibili-recorder
   from: github

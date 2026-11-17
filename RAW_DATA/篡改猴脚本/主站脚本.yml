@@ -370,6 +370,7 @@
   description: 仅帮助用户从视频页下载音乐(封面,Tags,歌词,字幕 写入支持).
   icon:
     - vue
+    - ts
 - name: Bilibili 动态批量删除工具
   link: hatanokokosa/bilibili-dynamic-cleaner
   from: github

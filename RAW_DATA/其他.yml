@@ -114,7 +114,8 @@
   link: mark9804/bilibili-danmaku-regex
   from: github
   description: 结合pakku.js使用的自用B站弹幕屏蔽正则
-  icon: []
+  icon:
+    - py
 - name: BiliCLOnline
   link: InJeCTrL/BiliCLOnline
   from: github
@@ -146,6 +147,7 @@
   description: 用于在 Mac OS 的菜单栏显示登录用户的信息及订阅的视频动态
   icon:
     - swift
+    - mac
 - name: bilibiliLottery
   link: silie666/bilibiliLottery
   from: github
@@ -374,6 +376,7 @@
   icon:
     - node
     - cli
+    - ts
 - name: Bilink
   link: Kaguya233qwq/Bilink
   from: github
@@ -400,6 +403,8 @@
   icon:
     - py
     - exe
+    - linux
+    - mac
 - name: B站追番日历
   link: Silentely/Bili-Calendar
   from: github

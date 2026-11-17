@@ -202,6 +202,7 @@
   description: BewlyCat——基于BewlyBewly开发的Bilibili拓展
   icon:
     - vue
+    - ts
 - name: Bilibili 快速拉黑助手 - Chrome 浏览器扩展
   link: Nothing1024/bilibili-block-extension
   from: github

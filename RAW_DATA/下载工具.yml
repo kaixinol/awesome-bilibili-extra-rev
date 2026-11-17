@@ -486,6 +486,9 @@
   icon:
     - rust
     - cli
+    - exe
+    - linux
+    - mac
 - name: 哔哩哔哩字幕下载工具 (BiliSub)
   link: lvusyy/biliSub
   from: github
@@ -514,6 +517,7 @@
     - ts
     - exe
     - mac
+    - linux
 - name: Bilibili-Captions
   link: LuShan123888/video-captions
   from: github

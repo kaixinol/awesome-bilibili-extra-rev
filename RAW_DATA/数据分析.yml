@@ -231,6 +231,7 @@
   icon:
     - py
     - exe
+    - mac
 - name: B站TOP排行榜爬虫项目
   link: HaoFan-Fy/bilibili-tops-API
   from: github
