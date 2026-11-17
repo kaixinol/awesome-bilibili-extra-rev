@@ -10,7 +10,7 @@ import { normalizeLink } from '../validators/item-validator.js';
 import { checkItems } from '../checkers/link-checker.js';
 import { readText, writeText, findYamlFiles } from '../utils/file-utils.js';
 import { processDescription } from '../validators/item-validator.js';
-import { addIcon } from '../utils/badge-utils.js';
+import { addIcon, renderIconDocs } from '../utils/badge-utils.js';
 
 const README_TEMPLATE = 'README_RAW.md';
 const README_OUTPUT = 'README.md';
@@ -155,7 +155,7 @@ const generateReadme = (validItems) => {
 
   const sortedKeys = Object.keys(grouped).sort();
 
-  let result = template;
+  let result = template.replace('{{ ICONS }}', renderIconDocs());
   for (const category of sortedKeys) {
     const categoryItems = grouped[category];
     const placeholder = `{{ RAW_DATA/${category}.yml }}`;

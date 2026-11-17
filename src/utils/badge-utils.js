@@ -1,109 +1,33 @@
-/**
- * Badge/icon mapping utilities
- * Maps technology tags to Markdown badge images
- */
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { parse } from 'yaml';
 
-// Base icon paths organized by category
-const ICON_PATHS = {
-  // Languages
-  python: 'languages/python',
-  javascript: 'languages/javascript',
-  nodejs: 'frameworks/nodejs',
-  typescript: 'frameworks/tsnode',
-  java: 'frameworks/openjdk',
-  springboot: 'frameworks/springboot',
-  csharp: 'languages/csharp',
-  c: 'languages/c',
-  cpp: 'languages/cplusplus',
-  php: 'languages/php',
-  rust: 'languages/rust',
-  dart: 'languages/dart',
-  shell: 'languages/shell',
-  kotlin: 'languages/kotlin',
-  swift: 'languages/swift',
-  go: 'languages/go',
-  // Frameworks
-  vue: 'frameworks/vue',
-  svelte: 'frameworks/svelte',
-  flutter: 'frameworks/flutter',
-  // Platforms
-  windows: 'platforms/windows',
-  terminal: 'tools/terminal',
-  docker: 'tools/docker',
-  web: 'platforms/web',
-  android: 'platforms/android',
-  linux: 'platforms/linux',
-  apple: 'platforms/apple',
+const ICONS = parse(fs.readFileSync(fileURLToPath(new URL('../data/icons.yml', import.meta.url)), 'utf8'));
+const BY_KEY = new Map(ICONS.map((icon) => [icon.key, icon]));
+const ALIASES = new Map(ICONS.flatMap((icon) => (icon.aliases || []).map((a) => [a.toLowerCase(), icon.key])));
+
+export const VALID_ICONS = ICONS.map((icon) => icon.key);
+
+export const normalizeIcon = (type) => {
+  if (typeof type !== 'string') return null;
+  const key = type.toLowerCase().trim();
+  const canonical = ALIASES.get(key) || key;
+  return BY_KEY.has(canonical) ? canonical : null;
 };
 
-// Display labels
-const ICON_LABELS = {
-  python: 'Python',
-  javascript: 'JavaScript',
-  nodejs: 'NodeJs',
-  typescript: 'TypeScript',
-  java: 'Java',
-  springboot: 'Java',
-  csharp: 'C#',
-  c: 'C',
-  cpp: 'C++',
-  php: 'PHP',
-  rust: 'Rust',
-  dart: 'Dart',
-  shell: 'Shell',
-  kotlin: 'Kotlin',
-  swift: 'Swift',
-  go: 'Go',
-  vue: 'Vue',
-  svelte: 'Svelte',
-  flutter: 'Flutter',
-  windows: 'Windows',
-  terminal: 'Cli',
-  docker: 'Docker',
-  web: 'Web',
-  android: 'Android',
-  linux: 'Linux',
-  apple: 'MacOS',
-};
-
-// Alias mapping (alias -> canonical key)
-const ALIASES = {
-  py: 'python',
-  node: 'nodejs',
-  ts: 'typescript',
-  js: 'javascript',
-  jar: 'java',
-  'spring-boot': 'springboot',
-  'c#': 'csharp',
-  'c++': 'cpp',
-  sh: 'shell',
-  golang: 'go',
-  exe: 'windows',
-  cli: 'terminal',
-  mac: 'apple',
-  ios: 'apple',
-};
-
-/**
- * Convert technology tags to Markdown badge images
- * @param {string[]} types - Array of technology tags
- * @returns {string} Space-separated Markdown badges
- */
 export const addIcon = (types) => {
-  if (!Array.isArray(types) || types.length === 0) {
-    return '';
-  }
-
-  const icons = types
-    .map((type) => {
-      const key = type.toLowerCase();
-      const canonical = ALIASES[key] || key;
-      const path = ICON_PATHS[canonical];
-      const label = ICON_LABELS[canonical];
-      if (!path || !label) return null;
-      return `![${label}](svg/${path}.svg?raw=true)`;
+  if (!Array.isArray(types) || types.length === 0) return '';
+  return [...new Set(types.map(normalizeIcon).filter(Boolean))]
+    .map((key) => {
+      const { label, svg } = BY_KEY.get(key);
+      return `![${label}](svg/${svg}.svg?raw=true)`;
     })
-    .filter(Boolean);
+    .join(' ');
+};
 
-  return icons.join(' ');
+export const renderIconDocs = () => {
+  const items = ICONS
+    .map(({ svg, label, description }) => `    <li>\n      <img src="svg/${svg}.svg?raw=true" alt="${label}">: ${description}\n    </li>`)
+    .join('\n');
+  return `<details>\n  <summary><b>图标说明</b></summary>\n  <ul>\n${items}\n  </ul>\n</details>`;
 };
