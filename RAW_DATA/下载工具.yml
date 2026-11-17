@@ -345,7 +345,7 @@
     - rust
     - exe
 - name: bili-sync-yt-dlp
-  link: cap153/bili-sync-yt-dlp
+  link: cap153/bili-sync-fav
   from: github
   description: 使用yt-dlp结合aria2下载视频，仅下载收藏夹视频和海报
   icon:

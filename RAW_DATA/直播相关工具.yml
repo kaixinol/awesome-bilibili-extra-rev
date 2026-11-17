@@ -69,7 +69,7 @@
     - py
     - docker
 - name: Bilibili-dd-monitor
-  link: dd-center/bilibili-dd-monitor
+  link: wdpm/bilibili-dd-monitor
   from: github
   description: 专为DD设计的多屏直播观看工具
   icon:
@@ -387,7 +387,7 @@
     - c#
     - exe
 - name: BililiveRecorder.cli-ds
-  link: jkfujr/BililiveRecorder.cli-ds
+  link: jkfujr/Rec-Stutas
   from: github
   description: 一个用python简单实现的录播姬命令行的信息展示
   icon:

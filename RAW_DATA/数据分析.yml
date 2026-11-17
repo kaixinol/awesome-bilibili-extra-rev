@@ -132,7 +132,7 @@
     - py
     - cli
 - name: bilibili-xml
-  link: ltzu929/bilibili-xml
+  link: ltzu929/bili-danmaku-analyzer
   from: github
   description: 弹幕数量可视化，方便切片man知道录播时弹幕热点（路灯）
   icon:
