@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadYamlArray, writeYamlArray } from '../data/yaml-manager.js';
 import { normalizeLink } from '../validators/item-validator.js';
+import { checkItems } from '../checkers/link-checker.js';
 
 const REPLACEMENTS = (process.env.REPLACEMENTS || '').trim();
 
@@ -33,8 +34,30 @@ if (replacementPairs.length === 0) {
   process.exit(0);
 }
 
+// 目标地址无效时宁可不动，避免把死链写进 RAW_DATA
+const candidates = replacementPairs.map((pair) => ({
+  from: 'github',
+  link: pair.replacement.replace('https://github.com/', ''),
+  __normalizedLink: pair.replacement,
+}));
+const checked = await checkItems(candidates);
+const checkedByUrl = new Map(checked.map((r) => [r.__normalizedLink, r]));
+const validPairs = replacementPairs.filter((pair) => checkedByUrl.get(pair.replacement)?.ok === true);
+
+for (const pair of replacementPairs) {
+  const result = checkedByUrl.get(pair.replacement);
+  if (!result?.ok) {
+    console.log(`Keeping original: ${pair.replacement} is invalid (HTTP ${result?.status ?? 'network error'})`);
+  }
+}
+
+if (validPairs.length === 0) {
+  console.log('No valid replacement targets. All projects will be kept.');
+  process.exit(0);
+}
+
 console.log('Replacements to apply:');
-replacementPairs.forEach((pair) => {
+validPairs.forEach((pair) => {
   console.log(`  ${pair.original} → ${pair.replacement}`);
 });
 
@@ -65,7 +88,7 @@ for (const filePath of ymlFiles) {
     const normalized = normalizeLink(item.from, item.link);
     
     // Check if this item should be replaced
-    const replacement = replacementPairs.find((pair) => {
+    const replacement = validPairs.find((pair) => {
       const pairOriginal = pair.original.replace('https://github.com/', '');
       return normalized === pairOriginal || item.link === pairOriginal;
     });
