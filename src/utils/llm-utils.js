@@ -48,8 +48,9 @@ const callModel = async ({ apiUrl, apiKey, model, prompt, temperature, enableThi
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
+  const minimal = minimalParamModels.has(model);
   const body = { model, messages: [{ role: 'user', content: prompt }] };
-  if (!minimalParamModels.has(model)) {
+  if (!minimal) {
     body.temperature = temperature;
     body.extra_body = { enable_thinking: enableThinking };
   }
@@ -59,6 +60,7 @@ const callModel = async ({ apiUrl, apiKey, model, prompt, temperature, enableThi
     const text = await res.text();
     const error = new Error(`LLM API error: ${res.status} ${res.statusText}: ${text.slice(0, 200)}`);
     error.status = res.status;
+    error.minimal = minimal;
     throw error;
   }
 
@@ -108,8 +110,9 @@ export const callLLMAPI = async (prompt, options = {}) => {
       console.warn(`✗ Model "${model}" failed: ${error.message}`);
       errors.push({ model, error: error.message });
 
-      // 400 通常是模型不接受可选参数（temperature / thinking）；全去掉重试一次，后续也一直用最小参数
-      if (error.status === 400 && !minimalParamModels.has(model)) {
+      // 400 且本次带了可选参数 → 无条件用最小参数重试一次。
+      // 不读 Set 决策，避免并发下两个 worker 同时 400 时，后者看到 Set 已有该模型而跳过重试直接拉黑。
+      if (error.status === 400 && !error.minimal) {
         minimalParamModels.add(model);
         try {
           const content = await callModel(args);
