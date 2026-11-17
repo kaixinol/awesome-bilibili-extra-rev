@@ -1,14 +1,12 @@
 name: Apply Cleanup
 
 on:
-  issue_comment:
-    types: [created]
+  issues:
+    types: [labeled]
 
 jobs:
   apply-cleanup:
-    if: >
-      contains(github.event.comment.body, 'apply cleanup') &&
-      (github.event.comment.author_association == 'OWNER' || github.event.comment.user.login == github.event.issue.user.login)
+    if: github.event.label.name == 'apply-cleanup'
     runs-on: ubuntu-latest
 
     steps:

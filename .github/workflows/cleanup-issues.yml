@@ -117,7 +117,7 @@ jobs:
               body += inactive.map((i) => formatItem(i, 'inactive')).join('\\n') + '\\n\\n';
             }
 
-            body += '完成后评论：\`@github-actions[bot] apply cleanup\`\\n';
+            body += '完成后添加 \`apply-cleanup\` label\\n';
 
             // Create issue via GitHub API
             const res = await fetch('https://api.github.com/repos/' + process.env.GITHUB_REPOSITORY + '/issues', {

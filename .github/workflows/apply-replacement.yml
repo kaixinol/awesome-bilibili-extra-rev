@@ -1,14 +1,12 @@
 name: Apply Replacement
 
 on:
-  issue_comment:
-    types: [created]
+  issues:
+    types: [labeled]
 
 jobs:
   apply-replacement:
-    if: >
-      contains(github.event.comment.body, 'apply replacement') &&
-      (github.event.comment.author_association == 'OWNER' || github.event.comment.user.login == github.event.issue.user.login)
+    if: github.event.label.name == 'apply-replacement'
     runs-on: ubuntu-latest
 
     steps:

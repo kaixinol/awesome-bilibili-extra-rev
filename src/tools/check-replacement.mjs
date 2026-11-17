@@ -226,7 +226,7 @@ const main = async () => {
     body += `  - 理由：${r.reason}\n\n`;
   });
 
-  body += '完成后评论：`@github-actions[bot] apply replacement`\n';
+  body += '完成后添加 `apply-replacement` label\n';
 
   // Create issue via GitHub API
   const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
